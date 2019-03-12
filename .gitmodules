@@ -1,0 +1,3 @@
+[submodule "Plugins/MESOUSL"]
+	path = Plugins/MESOUSL
+	url = https://poly.meso.net/ue4/mesousl.git
