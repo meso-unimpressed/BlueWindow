@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "UserWidget.h"
+
 #include "BlueWindowBPLibrary.generated.h"
 
 /* 
@@ -27,6 +29,75 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Execute Sample function", Keywords = "BlueWindow sample test testing"), Category = "BlueWindowTesting")
-	static float BlueWindowSampleFunction(float Param);
+	/**
+	 * Draw lines with constant thickness
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Painting")
+	static void DrawLinesThick(
+		UPARAM(ref) FPaintContext& Context,
+		const TArray<FVector2D>& Points,
+		bool bAntiAlias,
+		FLinearColor Tint = FLinearColor::White,
+		float Thickness = 1.0);
+
+	/**
+	 * Draw lines with individual vertex colors and with constant thickness
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Painting")
+	static void DrawLinesColored(
+		UPARAM(ref) FPaintContext& Context,
+		const TArray<FVector2D>& Points,
+		const TArray<FLinearColor>& PointColors,
+		bool bAntiAlias,
+		FLinearColor Tint = FLinearColor::White,
+		float Thickness = 1.0);
+
+	/** Draws a box with any brush (not just asset) */
+	UFUNCTION(BlueprintCallable, Category = "Painting")
+	static void DrawBoxBrushed(
+		UPARAM(ref) FPaintContext& Context,
+		FVector2D Position,
+		FVector2D Size,
+		FSlateBrush Brush,
+		FLinearColor Tint = FLinearColor::White);
+
+	/** Draw a cubic bezier spline */
+	UFUNCTION(BlueprintCallable, Category = "Painting")
+	static void DrawCubicBezierSpline(
+		UPARAM(ref) FPaintContext& Context,
+		FVector2D P0, FVector2D P1, FVector2D P2, FVector2D P3,
+		FLinearColor Tint = FLinearColor::White,
+		float Thickness = 1.0);
+
+	/** Draw a Hermite spline */
+	UFUNCTION(BlueprintCallable, Category = "Painting")
+	static void DrawSpline(
+		UPARAM(ref) FPaintContext& Context,
+		FVector2D InStart,
+		FVector2D InStartDir,
+		FVector2D InEnd,
+		FVector2D InEndDir,
+		FLinearColor Tint = FLinearColor::White,
+		float Thickness = 1.0);
+
+	/** Draw a Hermite spline in Draw Space coordinates */
+	UFUNCTION(BlueprintCallable, Category = "Painting")
+	static void DrawSplineDrawSpace(
+		UPARAM(ref) FPaintContext& Context,
+		FVector2D InStart,
+		FVector2D InStartDir,
+		FVector2D InEnd,
+		FVector2D InEndDir,
+		FLinearColor Tint = FLinearColor::White,
+		float Thickness = 1.0);
+
+	//TODO: Brushed lines support
+	/*UFUNCTION(BlueprintCallable, meta = (Keywords = "Draw lines with a brush applied and with constant thickness"), Category = "Painting")
+	static void DrawLinesBrushed(
+		FPaintContext& Context,
+		const TArray<FVector2D>& Points,
+		FLinearColor Tint,
+		const FSlateBrush* InBrush,
+		bool bAntiAlias,
+		float Thickness);*/
 };
