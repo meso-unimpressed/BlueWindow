@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Slate.h"
 #include "Blueprint/UserWidget.h"
+#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
 #include "PropertySynchronizableUserWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUserWidgetPropertiesSynchronize);
@@ -21,4 +23,62 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
     void OnUserPropertiesSynchronize();
+};
+
+/**
+ *
+ */
+class BLUEWINDOW_API SMaterialBox : public SCompoundWidget
+{
+public:
+	SLATE_BEGIN_ARGS(SMaterialBox) : _Material()
+	{ }
+
+	SLATE_ATTRIBUTE(UMaterialInstanceDynamic*, Material)
+
+		SLATE_END_ARGS()
+
+		/** Constructs this widget with InArgs */
+		void Construct(const FArguments& InArgs);
+
+	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
+
+	void SetMaterial(UMaterialInstanceDynamic* mat);
+
+	void UpdateBrush();
+
+	UMaterialInstanceDynamic* Material;
+	FSlateBrush Brush;
+};
+
+/**
+ *
+ */
+UCLASS()
+class BLUEWINDOW_API UMaterialBox : public UUserWidget
+{
+	GENERATED_BODY()
+protected:
+	virtual TSharedRef<SWidget> RebuildWidget() override;
+
+	TSharedPtr<SMaterialBox> Drawer;
+
+	UMaterialInterface* PrevMat;
+public:
+
+	UPROPERTY(BlueprintReadOnly)
+		UMaterialInstanceDynamic* MaterialInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+		UMaterialInterface* Material;
+
+	virtual void SynchronizeProperties() override;
+
+	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnUserPropertiesSynchronize();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnMaterialChanged();
 };
