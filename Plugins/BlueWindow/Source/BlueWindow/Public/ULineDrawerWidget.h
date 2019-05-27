@@ -23,8 +23,11 @@ protected:
 	TSharedPtr<SLineDrawerWidget> Drawer;
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Line Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Line Drawer")
 	TArray<FPolyLine2D> Lines;
+
+	UFUNCTION(BlueprintCallable, Category = "Line Drawer")
+	void UserDraw();
 
 	virtual void SynchronizeProperties() override;
 

@@ -13,14 +13,20 @@ UWidgetHostWindow::UWidgetHostWindow()
 	// ...
 }
 
+UWidgetHostWindow::~UWidgetHostWindow()
+{
+	if(sWindow.IsValid())
+	{
+		sWindow.Get()->RequestDestroyWindow();
+	}
+}
+
 
 // Called when the game starts
 void UWidgetHostWindow::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
+	UpdateDisplayMetrics();
 }
 
 
@@ -33,35 +39,118 @@ void UWidgetHostWindow::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	// ...
 }
 
-void UWidgetHostWindow::OpenWindow(TSubclassOf<class UUserWidget> content, APlayerController* owner)
+void UWidgetHostWindow::OpenWindow(TSubclassOf<class UUserWidget> content, APlayerController* owner, FBlueWindowSettings settings)
 {
 	if(!owner)
 	{
 		owner = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	}
 
+	Settings = settings;
+
 	uContent = CreateWidget<UUserWidget>(owner, content);
 
+	FMonitorInfo targetMonitor = Monitors[settings.TargetMonitor];
+	FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
+
 	sWindow = SNew(SWindow)
-		.Title(FText::FromString(TEXT("Blue Window")))
-		.HasCloseButton(true)
+		.Title(settings.Title)
+		.HasCloseButton(settings.HasCloseButton)
 		.IsInitiallyMaximized(false)
-		.ScreenPosition(FVector2D(0, 0))
-		.ClientSize(FVector2D(1000, 1000))
-		.UseOSWindowBorder(true)
-		.CreateTitleBar(true)
+		.ScreenPosition(offset)
+		.ClientSize(settings.Size)
+		.UseOSWindowBorder(settings.UseOSWindowBorder)
+		.CreateTitleBar(settings.CreateTitleBar)
 		.SizingRule(ESizingRule::UserSized)
-		.SupportsMaximize(false)
-		.SupportsMinimize(true);
-
-	sContent = uContent->TakeWidget();
-
-	sWindow->SetContent(sContent.ToSharedRef());
+		.SupportsMaximize(settings.SupportsMaximize)
+		.SupportsMinimize(settings.SupportsMinimize)
+		.SupportsTransparency(FWindowTransparency((EWindowTransparency)settings.TransparencyMode))
+		.InitialOpacity(settings.Opacity);
 
 	auto refWindow = sWindow.ToSharedRef();
 	FSlateApplication& slateApp = FSlateApplication::Get();
 	slateApp.AddWindow(refWindow, true);
+
+	sContent = uContent->TakeWidget();
+
 	sWindow->SetContent(sContent.ToSharedRef());
+	SetSettings(settings, true);
+}
+
+void UWidgetHostWindow::UpdateDisplayMetrics()
+{
+	FMonitorInfo prev;
+	bool prevavailable = false;
+	if(Monitors.Num() > 0)
+	{
+		prev = Monitors[Settings.TargetMonitor];
+		prevavailable = true;
+	}
+
+	FDisplayMetrics::RebuildDisplayMetrics(DisplayMetrics);
+	Monitors.Empty();
+	Monitors = DisplayMetrics.MonitorInfo;
+
+	int minleft = 0;
+	int mintop = 0;
+
+	for(auto it = Monitors.CreateConstIterator(); it; ++it)
+	{
+		auto monitor = *it;
+		minleft = FMath::Min(minleft, monitor.DisplayRect.Left);
+		mintop = FMath::Min(mintop, monitor.DisplayRect.Top);
+	}
+	minleft = minleft & 0x00000000FFFFFFFF;
+	mintop = mintop & 0x00000000FFFFFFFF;
+
+	Monitors.Sort([this, minleft, mintop](const FMonitorInfo& A, const FMonitorInfo& B)
+	{
+		return GetMonitorOrderComparer(A, minleft, mintop) < GetMonitorOrderComparer(B, minleft, mintop);
+	});
+
+	FMonitorInfo curr = Monitors[Settings.TargetMonitor];
+
+	if(prevavailable)
+	{
+		if (!prev.ID.Equals(curr.ID))
+			SetSettings(Settings, true);
+	}
+}
+
+void UWidgetHostWindow::BringToFront(bool bForce) { sWindow->BringToFront(bForce); }
+
+void UWidgetHostWindow::SetSettings(FBlueWindowSettings settings, bool force)
+{
+	if (!sWindow.IsValid()) return;
+
+	if (!Settings.Title.EqualTo(settings.Title) || force)
+		sWindow->SetTitle(settings.Title);
+
+	if (Settings.TargetMonitor != settings.TargetMonitor ||
+		Settings.TopLeftOffset != settings.TopLeftOffset ||
+		force)
+	{
+		FMonitorInfo targetMonitor = Monitors[settings.TargetMonitor];
+		FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
+		sWindow->MoveWindowTo(offset);
+	}
+
+	if(Settings.Size != settings.Size || force)
+		sWindow->Resize(settings.Size);
+
+	if(Settings.Opacity != settings.Opacity || force)
+		sWindow->SetOpacity(settings.Opacity);
+
+	if (Settings.WindowMode != settings.WindowMode || force)
+		sWindow->SetWindowMode((EWindowMode::Type)settings.WindowMode);
+
+	Settings = settings;
+}
+
+void UWidgetHostWindow::Close()
+{
+	if(!sWindow.IsValid()) return;
+	sWindow->RequestDestroyWindow();
 }
 
 

@@ -26,7 +26,8 @@ public class BlueWindow : ModuleRules
 			new string[]
 			{
 				"Core",
-				"UMG",
+                "ApplicationCore",
+                "UMG",
 				"Slate",
 				"SlateCore"
 			}
@@ -37,7 +38,8 @@ public class BlueWindow : ModuleRules
 			new string[]
 			{
 				"CoreUObject",
-				"Engine",
+                "ApplicationCore",
+                "Engine",
 				"UMG",
 				"Slate",
 				"SlateCore"

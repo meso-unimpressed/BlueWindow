@@ -8,6 +8,11 @@ TSharedRef<SWidget> ULineDrawerWidget::RebuildWidget()
 	return Drawer.ToSharedRef();
 }
 
+void ULineDrawerWidget::UserDraw()
+{
+	Drawer->Lines = Lines;
+}
+
 void ULineDrawerWidget::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();

@@ -36,7 +36,7 @@ public:
 
 	SLATE_ATTRIBUTE(UMaterialInstanceDynamic*, Material)
 
-		SLATE_END_ARGS()
+	SLATE_END_ARGS()
 
 		/** Constructs this widget with InArgs */
 		void Construct(const FArguments& InArgs);
@@ -66,7 +66,7 @@ protected:
 	UMaterialInterface* PrevMat;
 public:
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 		UMaterialInstanceDynamic* MaterialInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
@@ -75,6 +75,17 @@ public:
 	virtual void SynchronizeProperties() override;
 
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+
+	virtual void NativePaint(FPaintContext& InContext) const override;
+
+	virtual int32 NativePaint(
+		const FPaintArgs& Args,
+		const FGeometry& AllottedGeometry,
+		const FSlateRect& MyCullingRect,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		const FWidgetStyle& InWidgetStyle,
+		bool bParentEnabled) const override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnUserPropertiesSynchronize();

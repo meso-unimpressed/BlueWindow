@@ -29,7 +29,20 @@ void UMaterialBox::SynchronizeProperties()
 
 void UMaterialBox::ReleaseSlateResources(bool bReleaseChildren)
 {
+	Super::ReleaseSlateResources(bReleaseChildren);
 	Drawer.Reset();
+}
+
+void UMaterialBox::NativePaint(FPaintContext& InContext) const
+{
+	Super::NativePaint(InContext);
+}
+
+int32 UMaterialBox::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry,
+	const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId,
+	const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
+{
+	return Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 }
 
 TSharedRef<SWidget> UMaterialBox::RebuildWidget()
