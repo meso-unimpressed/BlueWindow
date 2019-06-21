@@ -10,6 +10,8 @@ UWidgetHostWindow::UWidgetHostWindow()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	SetCanEverAffectNavigation(false);
+
 	// ...
 }
 
@@ -35,20 +37,33 @@ void UWidgetHostWindow::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	auto actor = GetOwner();
-	
-	// ...
+
+	if(sWindow.IsValid())
+	{
+		FVector2D currpos = sWindow->GetPositionInScreen();
+		FVector2D currsize = sWindow->GetSizeInScreen();
+
+		if(currsize != prevWindowSize)
+			OnWindowResized.Broadcast(currpos, currsize);
+
+		prevWindowPos = currpos;
+		prevWindowSize = currsize;
+	}
 }
 
-void UWidgetHostWindow::OpenWindow(TSubclassOf<class UUserWidget> content, APlayerController* owner, FBlueWindowSettings settings)
+void UWidgetHostWindow::OpenWindow(
+	TSubclassOf<class UUserWidget> content, APlayerController* owner, FBlueWindowSettings settings,
+	UUserWidget*& outContent
+)
 {
 	if(!owner)
 	{
 		owner = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	}
 
-	Settings = settings;
+	if(sCanvas.IsValid()) sCanvas.Reset();
 
-	uContent = CreateWidget<UUserWidget>(owner, content);
+	Settings = settings;
 
 	FMonitorInfo targetMonitor = Monitors[settings.TargetMonitor];
 	FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
@@ -64,14 +79,40 @@ void UWidgetHostWindow::OpenWindow(TSubclassOf<class UUserWidget> content, APlay
 		.SizingRule(ESizingRule::UserSized)
 		.SupportsMaximize(settings.SupportsMaximize)
 		.SupportsMinimize(settings.SupportsMinimize)
-		.SupportsTransparency(FWindowTransparency((EWindowTransparency)settings.TransparencyMode))
-		.InitialOpacity(settings.Opacity);
+		.InitialOpacity(settings.Opacity)
+		.UserResizeBorder(settings.ResizeBorder);
 
 	auto refWindow = sWindow.ToSharedRef();
 	FSlateApplication& slateApp = FSlateApplication::Get();
 	slateApp.AddWindow(refWindow, true);
 
-	sContent = uContent->TakeWidget();
+	outContent = Content = CreateWidget<UUserWidget>(owner, content);
+	sContent = Content->TakeWidget();
+	/*sBox = SNew(SBox)
+		.HAlign(EHorizontalAlignment::HAlign_Fill)
+		.VAlign(EVerticalAlignment::VAlign_Fill)
+		.WidthOverride(FOptionalSize(settings.Size.X))
+		.HeightOverride(FOptionalSize(settings.Size.Y))
+		.Content()[ sContent.ToSharedRef() ];*/
+
+	FOnWindowClosed onclosed;
+	onclosed.BindLambda([this](const TSharedRef < SWindow >& window)
+	{
+		OnWindowClosed.Broadcast();
+	});
+	sWindow->SetOnWindowClosed(onclosed);
+
+	FOnWindowMoved onmoved;
+	onmoved.BindLambda([this](const TSharedRef < SWindow >& window)
+	{
+		/*sBox->SetWidthOverride(FOptionalSize(window->GetClientSizeInScreen().X));
+		sBox->SetHeightOverride(FOptionalSize(window->GetClientSizeInScreen().Y));*/
+		OnWindowMoved.Broadcast(
+			sWindow->GetPositionInScreen(),
+			sWindow->GetSizeInScreen()
+		);
+	});
+	sWindow->SetOnWindowMoved(onmoved);
 
 	sWindow->SetContent(sContent.ToSharedRef());
 	SetSettings(settings, true);
@@ -136,7 +177,11 @@ void UWidgetHostWindow::SetSettings(FBlueWindowSettings settings, bool force)
 	}
 
 	if(Settings.Size != settings.Size || force)
+	{
 		sWindow->Resize(settings.Size);
+		/*sBox->SetWidthOverride(FOptionalSize(settings.Size.X));
+		sBox->SetHeightOverride(FOptionalSize(settings.Size.Y));*/
+	}
 
 	if(Settings.Opacity != settings.Opacity || force)
 		sWindow->SetOpacity(settings.Opacity);

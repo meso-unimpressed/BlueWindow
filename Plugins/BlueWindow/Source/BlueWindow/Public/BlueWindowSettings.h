@@ -7,6 +7,7 @@
 #include "UObject/Interface.h"
 #include "BlueWindowSettings.generated.h"
 
+
 UENUM(BlueprintType)
 enum class EBlueWindowMode : uint8
 {
@@ -30,46 +31,46 @@ struct FBlueWindowSettings
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		FText Title = FText::FromString(TEXT("UE4 Window"));
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		bool CreateTitleBar = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		bool HasCloseButton = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EBlueWindowTransparencyMode TransparencyMode = EBlueWindowTransparencyMode::None;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
+		FMargin ResizeBorder = FMargin(5);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		bool SupportsMinimize = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		bool SupportsMaximize = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		bool UseOSWindowBorder = false;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 	//bool AppearsInTaskbar = false;
 
 	/**
 	 * Screen ID here != the one in the OS. It's always ordered left to right then top to bottom
 	 * 0 is the leftmost monitor. This is done to make industrial situations safer.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		int TargetMonitor = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		FVector2D TopLeftOffset = FVector2D(0, 0);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		FVector2D Size = FVector2D(1280, 720);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		EBlueWindowMode WindowMode = EBlueWindowMode::Windowed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BlueWindow")
 		float Opacity = 1.0;
 };

@@ -8,8 +8,14 @@
 #include "Runtime/Slate/Public/Framework/Application/SlateApplication.h"
 #include "GenericApplication.h"
 #include "UserWidget.h"
+#include "SConstraintCanvas.h"
+#include "SBox.h"
 #include "BlueWindowSettings.h"
 #include "WidgetHostWindow.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBlueWindowTransformed, FVector2D, Position, FVector2D, Size);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowResized);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowClosed);
 
 UCLASS( ClassGroup=(BlueWindow), meta=(BlueprintSpawnableComponent) )
 class BLUEWINDOW_API UWidgetHostWindow : public UActorComponent
@@ -22,7 +28,11 @@ protected:
 
 	TSharedPtr<SWindow> sWindow;
 	TSharedPtr<SWidget> sContent;
-	UUserWidget* uContent;
+	TSharedPtr<SConstraintCanvas> sCanvas;
+	//TSharedPtr<SBox> sBox;
+
+	FVector2D prevWindowPos = FVector2D(0, 0);
+	FVector2D prevWindowSize = FVector2D(0, 0);
 
 	TArray<FMonitorInfo> Monitors = TArray<FMonitorInfo>();
 	FDisplayMetrics DisplayMetrics;
@@ -47,21 +57,36 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Opens the associated window
-	UFUNCTION(BlueprintCallable)
-	void OpenWindow(TSubclassOf<class UUserWidget> content, APlayerController* owner, FBlueWindowSettings settings);
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+	void OpenWindow(
+		TSubclassOf<class UUserWidget> content, APlayerController* owner, FBlueWindowSettings settings,
+		UUserWidget*& outContent
+	);
 
-	UFUNCTION(BlueprintCallable)
-	void UpdateDisplayMetrics();
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void UpdateDisplayMetrics();
 
-	UFUNCTION(BlueprintCallable)
-	void BringToFront(bool bForce);
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void BringToFront(bool bForce);
 
-	UFUNCTION(BlueprintCallable)
-	FBlueWindowSettings GetSettings() { return Settings; }
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		FBlueWindowSettings GetSettings() { return Settings; }
 
-	UFUNCTION(BlueprintCallable)
-	void SetSettings(FBlueWindowSettings settings, bool force);
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void SetSettings(FBlueWindowSettings settings, bool force);
 
-	UFUNCTION(BlueprintCallable)
-	void Close();
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void Close();
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow")
+		UUserWidget* Content;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FOnBlueWindowTransformed OnWindowMoved;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FOnBlueWindowTransformed OnWindowResized;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FOnBlueWindowClosed OnWindowClosed;
 };

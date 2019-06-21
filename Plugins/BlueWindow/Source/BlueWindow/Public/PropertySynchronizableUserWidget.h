@@ -66,7 +66,7 @@ protected:
 	UMaterialInterface* PrevMat;
 public:
 
-	UPROPERTY(BlueprintReadOnly, Transient)
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "Widget")
 		UMaterialInstanceDynamic* MaterialInstance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
