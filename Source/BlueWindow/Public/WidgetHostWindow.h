@@ -1,0 +1,92 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "Runtime/SlateCore/Public/Widgets/SWindow.h"
+#include "Runtime/Slate/Public/Framework/Application/SlateApplication.h"
+#include "GenericApplication.h"
+#include "UserWidget.h"
+#include "SConstraintCanvas.h"
+#include "SBox.h"
+#include "BlueWindowSettings.h"
+#include "WidgetHostWindow.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBlueWindowTransformed, FVector2D, Position, FVector2D, Size);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowResized);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowClosed);
+
+UCLASS( ClassGroup=(BlueWindow), meta=(BlueprintSpawnableComponent) )
+class BLUEWINDOW_API UWidgetHostWindow : public UActorComponent
+{
+	GENERATED_BODY()
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+	TSharedPtr<SWindow> sWindow;
+	TSharedPtr<SWidget> sContent;
+	TSharedPtr<SConstraintCanvas> sCanvas;
+	//TSharedPtr<SBox> sBox;
+
+	FVector2D prevWindowPos = FVector2D(0, 0);
+	FVector2D prevWindowSize = FVector2D(0, 0);
+
+	TArray<FMonitorInfo> Monitors = TArray<FMonitorInfo>();
+	FDisplayMetrics DisplayMetrics;
+
+	uint64_t GetMonitorOrderComparer(FMonitorInfo moninfo, int minleft, int mintop)
+	{
+		uint64_t l = (uint64_t)(moninfo.DisplayRect.Left + minleft) & 0x00000000FFFFFFFF;
+		uint64_t t = (uint64_t)(moninfo.DisplayRect.Top + mintop) & 0x00000000FFFFFFFF;
+		return (l << 32) | t;
+	}
+
+	FBlueWindowSettings Settings;
+
+public:
+
+	// Sets default values for this component's properties
+	UWidgetHostWindow();
+
+	~UWidgetHostWindow();
+
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	// Opens the associated window
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+	void OpenWindow(
+		TSubclassOf<class UUserWidget> content, APlayerController* owner, FBlueWindowSettings settings,
+		UUserWidget*& outContent
+	);
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void UpdateDisplayMetrics();
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void BringToFront(bool bForce);
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		FBlueWindowSettings GetSettings() { return Settings; }
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void SetSettings(FBlueWindowSettings settings, bool force);
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void Close();
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow")
+		UUserWidget* Content;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FOnBlueWindowTransformed OnWindowMoved;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FOnBlueWindowTransformed OnWindowResized;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FOnBlueWindowClosed OnWindowClosed;
+};
