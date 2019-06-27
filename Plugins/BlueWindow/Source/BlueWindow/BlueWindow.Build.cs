@@ -26,6 +26,7 @@ public class BlueWindow : ModuleRules
 			new string[]
 			{
 				"Core",
+                "InputCore",
                 "ApplicationCore",
                 "UMG",
 				"Slate",
