@@ -116,6 +116,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BlueWindow|InteractiveSceneCapture")
 		bool TriggerMoveEventOnOriginatedActor;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BlueWindow|InteractiveSceneCapture")
+		float OrthoFarClipPlane = 50000;
+
 	FMinimalViewInfo ViewInfo;
 	FSceneViewProjectionData ProjectionData;
 

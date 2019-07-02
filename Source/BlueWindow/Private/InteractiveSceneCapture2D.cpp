@@ -8,8 +8,6 @@
 #include "SceneView.h"
 #include "DrawDebugHelpers.h"
 
-#pragma optimize("", off)
-
 void AInteractiveSceneCapture2D::ComputeViewInfo()
 {
 	UTextureRenderTarget2D* RenderTexture = CaptureComponent2D->TextureTarget;
@@ -29,7 +27,7 @@ void AInteractiveSceneCapture2D::ComputeViewInfo()
 	ViewInfo.ProjectionMode = CaptureComponent2D->ProjectionType;
 	ViewInfo.AspectRatio = float(w) / float(h);
 	ViewInfo.OrthoNearClipPlane = 1;
-	ViewInfo.OrthoFarClipPlane = 1000;
+	ViewInfo.OrthoFarClipPlane = OrthoFarClipPlane;
 	ViewInfo.OrthoWidth = CaptureComponent2D->OrthoWidth;
 	ViewInfo.bConstrainAspectRatio = true;
 
