@@ -8,6 +8,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "UserWidget.h"
 #include "Engine/SceneCapture.h"
+#include "Events.h"
+#include "Geometry.h"
 
 #include "InteractiveSceneCapture2D.generated.h"
 
@@ -30,6 +32,9 @@ struct BLUEWINDOW_API FPointerRay
 
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
 		AActor* BeganOnActor = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
+		FPointerEvent PointerEvent;
 
 	/**
 	 * Computed by SourceId ^ SourceSceneCapture ^ ((int)FingerIndex)
@@ -80,9 +85,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
 		TMap<int, FPointerRay> CurrentPointers;
 
-	void BeginPointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords);
+	void BeginPointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords, FPointerEvent pointerEvent);
 
-	void MovePointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords);
+	void MovePointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords, FPointerEvent pointerEvent);
 
 	void EndPointer(int SourceId, ETouchIndex::Type FingerIndex);
 
@@ -90,13 +95,13 @@ public:
 		void OnInterpToggle(bool bEnable);
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow|InteractiveSceneCapture")
-		void BeginPointer(UWidget* SourceWidget, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords);
+		void BeginPointer(UWidget* SourceWidget, FGeometry geometry, FPointerEvent pointerEvent);
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow|InteractiveSceneCapture")
-		void MovePointer(UWidget* SourceWidget, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords);
+		void MovePointer(UWidget* SourceWidget, FGeometry geometry, FPointerEvent pointerEvent);
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow|InteractiveSceneCapture")
-		void EndPointer(UWidget* SourceWidget, ETouchIndex::Type FingerIndex);
+		void EndPointer(UWidget* SourceWidget, FPointerEvent pointerEvent);
 
 	//UPROPERTY(BlueprintAssignable, EditAnywhere, Category = "BlueWindow|InteractiveSceneCapture")
 	//TArray<ECollisionChannel> CollisionChannels;

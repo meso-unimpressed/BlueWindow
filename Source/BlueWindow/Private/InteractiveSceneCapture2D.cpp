@@ -108,6 +108,7 @@ void AInteractiveSceneCapture2D::CastPointerRay(FPointerRay& ray, FVector2D Norm
 			{
 				actor->NotifyActorOnInputTouchEnter(ray.FingerIndex.GetValue());
 				if (prevActor) prevActor->NotifyActorOnInputTouchLeave(ray.FingerIndex.GetValue());
+				if (prevTraceActor) prevTraceActor->NotifyActorOnLineTraceHitLeave(ray);
 			}
 
 			if (traceActor)
@@ -119,7 +120,6 @@ void AInteractiveSceneCapture2D::CastPointerRay(FPointerRay& ray, FVector2D Norm
 				else if (leaveEnter)
 				{
 					traceActor->NotifyActorOnLineTraceHitEnter(ray);
-					if (prevActor) prevTraceActor->NotifyActorOnLineTraceHitLeave(ray);
 				}
 				else // on move
 				{
@@ -175,18 +175,22 @@ void AInteractiveSceneCapture2D::Tick(float DeltaTime)
 	}
 }
 
-void AInteractiveSceneCapture2D::BeginPointer(UWidget* SourceWidget, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords)
+void AInteractiveSceneCapture2D::BeginPointer(UWidget* SourceWidget, FGeometry geometry, FPointerEvent pointerEvent)
 {
 	int srcid = (int)SourceWidget->GetUniqueID();
-	BeginPointer(srcid, FingerIndex, NormalizedCoords);
+	ETouchIndex::Type FingerIndex = (ETouchIndex::Type)((char)pointerEvent.GetPointerIndex());
+	FVector2D localCoords = geometry.AbsoluteToLocal(pointerEvent.GetScreenSpacePosition());
+	FVector2D normCoords = (localCoords / geometry.GetLocalSize() - 0.5) * FVector2D(2, -2);
+
+	BeginPointer(srcid, FingerIndex, normCoords, pointerEvent);
 }
 
-void AInteractiveSceneCapture2D::BeginPointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords)
+void AInteractiveSceneCapture2D::BeginPointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords, FPointerEvent pointerEvent)
 {
 	int currid = SourceId ^ ((int)GetUniqueID()) ^ ((int)FingerIndex);
 	if (CurrentPointers.Contains(currid))
 	{
-		MovePointer(SourceId, FingerIndex, NormalizedCoords);
+		MovePointer(SourceId, FingerIndex, NormalizedCoords, pointerEvent);
 		return;
 	}
 
@@ -195,27 +199,33 @@ void AInteractiveSceneCapture2D::BeginPointer(int SourceId, ETouchIndex::Type Fi
 	ray.UniqueId = currid;
 	ray.SourceId = SourceId;
 	ray.SourceSceneCapture = this;
+	ray.PointerEvent = pointerEvent;
 
 	CastPointerRay(ray, NormalizedCoords, true);
 	CurrentPointers.Add(currid, ray);
 }
 
-void AInteractiveSceneCapture2D::MovePointer(UWidget* SourceWidget, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords)
+void AInteractiveSceneCapture2D::MovePointer(UWidget* SourceWidget, FGeometry geometry, FPointerEvent pointerEvent)
 {
 	int srcid = (int)SourceWidget->GetUniqueID();
-	MovePointer(srcid, FingerIndex, NormalizedCoords);
+	ETouchIndex::Type FingerIndex = (ETouchIndex::Type)((char)pointerEvent.GetPointerIndex());
+	FVector2D localCoords = geometry.AbsoluteToLocal(pointerEvent.GetScreenSpacePosition());
+	FVector2D normCoords = (localCoords / geometry.GetLocalSize() - 0.5) * FVector2D(2, -2);
+
+	MovePointer(srcid, FingerIndex, normCoords, pointerEvent);
 }
 
-void AInteractiveSceneCapture2D::MovePointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords)
+void AInteractiveSceneCapture2D::MovePointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords, FPointerEvent pointerEvent)
 {
 	int currid = SourceId ^ ((int)GetUniqueID()) ^ ((int)FingerIndex);
 	if (!CurrentPointers.Contains(currid))
 	{
-		BeginPointer(SourceId, FingerIndex, NormalizedCoords);
+		BeginPointer(SourceId, FingerIndex, NormalizedCoords, pointerEvent);
 		return;
 	}
 
 	FPointerRay ray = CurrentPointers[currid];
+	ray.PointerEvent = pointerEvent;
 	CastPointerRay(ray, NormalizedCoords, false);
 
 	if (ray.BeganOnActor)
@@ -228,9 +238,11 @@ void AInteractiveSceneCapture2D::MovePointer(int SourceId, ETouchIndex::Type Fin
 	CurrentPointers[currid] = ray;
 }
 
-void AInteractiveSceneCapture2D::EndPointer(UWidget* SourceWidget, ETouchIndex::Type FingerIndex)
+void AInteractiveSceneCapture2D::EndPointer(UWidget* SourceWidget, FPointerEvent pointerEvent)
 {
 	int srcid = (int)SourceWidget->GetUniqueID();
+	ETouchIndex::Type FingerIndex = (ETouchIndex::Type)((char)pointerEvent.GetPointerIndex());
+
 	EndPointer(srcid, FingerIndex);
 }
 

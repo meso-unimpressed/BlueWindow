@@ -32,6 +32,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "BlueWindow|TraceEventActor")
+		TMap<int, FPointerRay> MomentaryPointerRays;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "BlueWindow|TraceEventActor")
+		TMap<int, FPointerRay> PersistentPointerRays;
+
 
 	/**
 	 * Event when a Pointer Ray intersecting this actor moves
