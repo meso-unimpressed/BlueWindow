@@ -12,44 +12,73 @@ public class BlueWindow : ModuleRules
 			new string[] {
 				// ... add public include paths required here ...
 			}
-			);
+		);
 				
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
 			}
-			);
-			
-		
-		PublicDependencyModuleNames.AddRange(
+		);
+
+        PrivateIncludePathModuleNames.AddRange(
+            new string[] {
+                "ImageWrapper",
+                "TargetPlatform",
+            }
+        );
+
+        PublicDependencyModuleNames.AddRange(
 			new string[]
-			{
-				"Core",
-                "InputCore",
+            {
                 "ApplicationCore",
+                "Core",
+                "CoreUObject",
+                "Engine",
+                "InputCore",
                 "UMG",
-				"Slate",
-				"SlateCore"
-			}
-			);
+                "Slate",
+                "SlateCore",
+                "RenderCore",
+                "RHI",
+            }
+		);
 			
 		
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
-			{
-				"CoreUObject",
-                "ApplicationCore",
-                "Engine",
-				"UMG",
-				"Slate",
-				"SlateCore"
-			}
-			);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
+            {
+                //"ApplicationCore",
+                //"Core",
+                //"CoreUObject",
+                //"Engine",
+                //"InputCore",
+                //"RHI",
+                "Slate",
+                "SlateCore",
+                "RenderCore",
+                "UMG",
+            }
+		);
+
+        if (Target.Type != TargetType.Server)
+        {
+            PrivateIncludePathModuleNames.AddRange(
+                new string[] {
+                    "SlateRHIRenderer",
+                }
+            );
+
+            DynamicallyLoadedModuleNames.AddRange(
+                new string[] {
+                    "ImageWrapper",
+                    "SlateRHIRenderer",
+                }
+            );
+        }
+
+        DynamicallyLoadedModuleNames.AddRange(
 			new string[] { }
-			);
+		);
 	}
 }
