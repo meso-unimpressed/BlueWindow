@@ -27,7 +27,7 @@ void AInteractiveSceneCapture2D::ComputeViewInfo()
 	ViewInfo.ProjectionMode = CaptureComponent2D->ProjectionType;
 	ViewInfo.AspectRatio = float(w) / float(h);
 	ViewInfo.OrthoNearClipPlane = 1;
-	ViewInfo.OrthoFarClipPlane = OrthoFarClipPlane;
+	ViewInfo.OrthoFarClipPlane = RayLength;
 	ViewInfo.OrthoWidth = CaptureComponent2D->OrthoWidth;
 	ViewInfo.bConstrainAspectRatio = true;
 
@@ -155,6 +155,10 @@ void AInteractiveSceneCapture2D::ComputeRayForViewProjection(FMatrix ViewProj, F
 	FVector4 End4 = ViewProj.InverseFast().TransformPosition(screenEnd);
 	Start = FVector(Start4.X, Start4.Y, Start4.Z) / Start4.W;
 	End = FVector(End4.X, End4.Y, End4.Z) / End4.W;
+
+	FVector dir = End - Start;
+	dir.Normalize();
+	End = Start + dir * RayLength;
 }
 
 // Called when the game starts or when spawned

@@ -69,7 +69,7 @@ private:
 	
 public:	
 
-	static void ComputeRayForViewProjection(FMatrix ViewProj, FVector2D NormCoord, FVector& Start, FVector& End);
+	void ComputeRayForViewProjection(FMatrix ViewProj, FVector2D NormCoord, FVector& Start, FVector& End);
 
 	UPROPERTY(Category = DecalActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class USceneCaptureComponent2D* CaptureComponent2D;
@@ -122,7 +122,7 @@ public:
 		bool TriggerMoveEventOnOriginatedActor;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BlueWindow|InteractiveSceneCapture")
-		float OrthoFarClipPlane = 50000;
+		float RayLength = 250000;
 
 	FMinimalViewInfo ViewInfo;
 	FSceneViewProjectionData ProjectionData;
