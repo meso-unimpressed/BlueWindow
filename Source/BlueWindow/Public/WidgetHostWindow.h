@@ -34,15 +34,16 @@ protected:
 	FVector2D prevWindowPos = FVector2D(0, 0);
 	FVector2D prevWindowSize = FVector2D(0, 0);
 
-	TArray<FMonitorInfo> Monitors = TArray<FMonitorInfo>();
+	TArray<FMonitorInfo> Monitors;
 	FDisplayMetrics DisplayMetrics;
 
-	uint64_t GetMonitorOrderComparer(FMonitorInfo moninfo, int minleft, int mintop)
+	FORCEINLINE FMonitorInfo GetMonitor(int i)
 	{
-		uint64_t l = (uint64_t)(moninfo.DisplayRect.Left + minleft) & 0x00000000FFFFFFFF;
-		uint64_t t = (uint64_t)(moninfo.DisplayRect.Top + mintop) & 0x00000000FFFFFFFF;
-		return (l << 32) | t;
+		if (Monitors.Num() <= 0) return FMonitorInfo();
+		return Monitors[i % Monitors.Num()];
 	}
+
+	uint64_t GetMonitorOrderComparer(FMonitorInfo moninfo, int64 minleft, int64 mintop);
 
 	FBlueWindowSettings Settings;
 

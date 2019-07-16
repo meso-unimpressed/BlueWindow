@@ -31,7 +31,6 @@ void UWidgetHostWindow::BeginPlay()
 	UpdateDisplayMetrics();
 }
 
-
 // Called every frame
 void UWidgetHostWindow::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -65,7 +64,7 @@ void UWidgetHostWindow::OpenWindow(
 
 	Settings = settings;
 
-	FMonitorInfo targetMonitor = Monitors[settings.TargetMonitor];
+	FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
 	FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
 
 	sWindow = SNew(SWindow)
@@ -124,7 +123,7 @@ void UWidgetHostWindow::UpdateDisplayMetrics()
 	bool prevavailable = false;
 	if(Monitors.Num() > 0)
 	{
-		prev = Monitors[Settings.TargetMonitor];
+		prev = GetMonitor(Settings.TargetMonitor);
 		prevavailable = true;
 	}
 
@@ -132,24 +131,22 @@ void UWidgetHostWindow::UpdateDisplayMetrics()
 	Monitors.Empty();
 	Monitors = DisplayMetrics.MonitorInfo;
 
-	int minleft = 0;
-	int mintop = 0;
+	int64 minleft = 0;
+	int64 mintop = 0;
 
 	for(auto it = Monitors.CreateConstIterator(); it; ++it)
 	{
 		auto monitor = *it;
-		minleft = FMath::Min(minleft, monitor.DisplayRect.Left);
-		mintop = FMath::Min(mintop, monitor.DisplayRect.Top);
+		minleft = FMath::Min(minleft, (int64)monitor.DisplayRect.Left);
+		mintop = FMath::Min(mintop, (int64)monitor.DisplayRect.Top);
 	}
-	minleft = minleft & 0x00000000FFFFFFFF;
-	mintop = mintop & 0x00000000FFFFFFFF;
 
 	Monitors.Sort([this, minleft, mintop](const FMonitorInfo& A, const FMonitorInfo& B)
 	{
 		return GetMonitorOrderComparer(A, minleft, mintop) < GetMonitorOrderComparer(B, minleft, mintop);
 	});
 
-	FMonitorInfo curr = Monitors[Settings.TargetMonitor];
+	FMonitorInfo curr = GetMonitor(Settings.TargetMonitor);
 
 	if(prevavailable)
 	{
@@ -157,6 +154,16 @@ void UWidgetHostWindow::UpdateDisplayMetrics()
 			SetSettings(Settings, true);
 	}
 }
+
+uint64_t UWidgetHostWindow::GetMonitorOrderComparer(FMonitorInfo moninfo, int64 minleft, int64 mintop)
+{
+	uint64_t l = (uint64_t)((int64)moninfo.DisplayRect.Left - minleft) & 0x00000000FFFFFFFF;
+	uint64_t t = (uint64_t)((int64)moninfo.DisplayRect.Top - mintop) & 0x00000000FFFFFFFF;
+	uint64_t res = (l << 32) | t;
+	return res;
+}
+
+#pragma optimize("", on)
 
 void UWidgetHostWindow::BringToFront(bool bForce) { sWindow->BringToFront(bForce); }
 
@@ -171,7 +178,7 @@ void UWidgetHostWindow::SetSettings(FBlueWindowSettings settings, bool force)
 		Settings.TopLeftOffset != settings.TopLeftOffset ||
 		force)
 	{
-		FMonitorInfo targetMonitor = Monitors[settings.TargetMonitor];
+		FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
 		FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
 		sWindow->MoveWindowTo(offset);
 	}
