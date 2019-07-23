@@ -69,7 +69,22 @@ private:
 	
 public:	
 
-	void ComputeRayForViewProjection(FMatrix ViewProj, FVector2D NormCoord, FVector& Start, FVector& End);
+	void ComputeRayForViewProjection(FMatrix ViewProj, FVector2D NormalizedCoords, FVector& Start, FVector& End);
+
+	/**
+	 * Deproject a screen coordinate to a world position with start and end points.
+	 * @param NormCoord: (-1, -1) bottom left to (1, 1) top right normalized projection coordinates
+	 */
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow|InteractiveSceneCapture")
+		void DeprojectScreenToWorld(FVector2D NormCoord, FVector& Start, FVector& End);
+
+	/**
+	 * Project a world coordinate to screen coordinates
+	 * @param Depth: normalized screen depth
+	 * @return NormCoord: (-1, -1) bottom left to (1, 1) top right normalized projection coordinates
+	 */
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow|InteractiveSceneCapture")
+		FVector2D ProjectWorldToScreen(FVector World, float& Depth);
 
 	UPROPERTY(Category = DecalActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class USceneCaptureComponent2D* CaptureComponent2D;

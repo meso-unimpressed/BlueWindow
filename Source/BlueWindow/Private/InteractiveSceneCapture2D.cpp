@@ -161,6 +161,19 @@ void AInteractiveSceneCapture2D::ComputeRayForViewProjection(FMatrix ViewProj, F
 	End = Start + dir * RayLength;
 }
 
+void AInteractiveSceneCapture2D::DeprojectScreenToWorld(FVector2D NormalizedCoords, FVector& Start, FVector& End)
+{
+	ComputeRayForViewProjection(ViewProjectionMatrix, NormalizedCoords, Start, End);
+}
+
+FVector2D AInteractiveSceneCapture2D::ProjectWorldToScreen(FVector World, float& Depth)
+{
+	FVector4 res4 = ViewProjectionMatrix.TransformPosition(World);
+	FVector res3 = FVector(res4.X, res4.Y, res4.Z) / res4.W;
+	Depth = res3.Z;
+	return FVector2D(res3.X, res3.Y);
+}
+
 // Called when the game starts or when spawned
 void AInteractiveSceneCapture2D::BeginPlay()
 {
