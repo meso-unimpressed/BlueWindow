@@ -60,6 +60,14 @@ void ATraceEventActor::NotifyActorOnLineTraceHitEnd(FPointerRay Pointer)
 	MomentaryPointerRays.Remove(Pointer.UniqueId);
 	PersistentPointerRays.Remove(Pointer.UniqueId);
 	ReceiveActorOnLineTraceHitEnd(Pointer);
+
+	if (Pointer.BeganOnActor)
+	{
+		if (Pointer.BeganOnActor == this)
+		{
+			ReceiveActorOnLineTraceHitPressed(Pointer);
+		}
+	}
 }
 
 void ATraceEventActor::NotifyActorOnOriginatedLineTraceEnd(FPointerRay Pointer)

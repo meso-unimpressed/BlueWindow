@@ -130,18 +130,33 @@ public:
 
 
 	/**
-	 * Event when a Pointer Ray intersecting this actor dies on this actor
+	 * Event when a Pointer Ray originated on this actor also dies on this actor
+	 * Use it for not cancelled button presses
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|TraceEventActor")
+		FActorPointerRayEventSignature OnLineTraceHitPressed;
+
+	/**
+	 * Event when a Pointer Ray originated on this actor also dies on this actor
+	 * Use it for not cancelled button presses
+	 */
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "LineTraceHitPressed"), Category = "BlueWindow|TraceEventActor")
+		void ReceiveActorOnLineTraceHitPressed(FPointerRay Pointer);
+
+
+	/**
+	 * Event when a Pointer Ray originally started on this actor dies somewhere
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|TraceEventActor")
 		FActorPointerRayEventSignature OnOriginatedLineTraceEnd;
 
 	/**
-	 * Event when a Pointer Ray intersecting this actor dies on this actor
+	 * Event when a Pointer Ray originally started on this actor dies somewhere
 	 */
 	virtual void NotifyActorOnOriginatedLineTraceEnd(FPointerRay Pointer);
 
 	/**
-	 * Event when a Pointer Ray intersecting this actor dies on this actor
+	 * Event when a Pointer Ray originally started on this actor dies somewhere
 	 */
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EndOriginatedLineTrace"), Category = "BlueWindow|TraceEventActor")
 		void ReceiveActorOnOriginatedLineTraceEnd(FPointerRay Pointer);
