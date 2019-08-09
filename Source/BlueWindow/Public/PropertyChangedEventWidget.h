@@ -22,12 +22,15 @@ public:
 	//virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	//virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	//virtual void PostEditImport() override;
+	//virtual void PostInitProperties() override;
+
+#if WITH_EDITOR
 	virtual void PostEditUndo() override;
 	virtual void PostEditUndo(TSharedPtr<ITransactionObjectAnnotation> TransactionAnnotation) override;
 	virtual void PostInterpChange(UProperty* PropertyThatChanged) override;
-	//virtual void PostInitProperties() override;
 
 	virtual void OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs) override;
+#endif
 
 	virtual void SynchronizeProperties() override;
 

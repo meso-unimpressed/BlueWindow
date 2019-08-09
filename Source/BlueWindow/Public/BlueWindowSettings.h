@@ -17,14 +17,6 @@ enum class EBlueWindowMode : uint8
 	NumWindowModes = EWindowMode::Type::NumWindowModes
 };
 
-UENUM(BlueprintType)
-enum class EBlueWindowTransparencyMode : uint8
-{
-	None = (uint8)EWindowTransparency::None,
-	PerPixel = (uint8)EWindowTransparency::PerPixel,
-	PerWindow = (uint8)EWindowTransparency::PerWindow
-};
-
 // This class does not need to be modified.
 USTRUCT(BlueprintType)
 struct FBlueWindowSettings

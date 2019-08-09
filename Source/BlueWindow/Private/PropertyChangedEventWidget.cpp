@@ -28,6 +28,13 @@
 //	NotifyOnAnyPropertyChanged();
 //}
 
+//void UPropertyChangedEventWidget::PostInitProperties()
+//{
+//	Super::PostInitProperties();
+//	NotifyOnAnyPropertyChanged();
+//}
+
+#if WITH_EDITOR
 void UPropertyChangedEventWidget::PostEditUndo()
 {
 	Super::PostEditUndo();
@@ -46,17 +53,12 @@ void UPropertyChangedEventWidget::PostInterpChange(UProperty* PropertyThatChange
 	NotifyOnAnyPropertyChanged();
 }
 
-//void UPropertyChangedEventWidget::PostInitProperties()
-//{
-//	Super::PostInitProperties();
-//	NotifyOnAnyPropertyChanged();
-//}
-
 void UPropertyChangedEventWidget::OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs)
 {
 	Super::OnDesignerChanged(EventArgs);
 	NotifyOnAnyPropertyChanged();
 }
+#endif
 
 void UPropertyChangedEventWidget::SynchronizeProperties()
 {
