@@ -4,13 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Runtime/SlateCore/Public/Widgets/SWindow.h"
-#include "Runtime/Slate/Public/Framework/Application/SlateApplication.h"
+#include "SWindow.h"
+#include "SlateApplication.h"
 #include "GenericApplication.h"
 #include "UserWidget.h"
 #include "SConstraintCanvas.h"
 #include "SBox.h"
 #include "BlueWindowSettings.h"
+#include "SInputPropagator.h"
+#include "SInputPropagatingWindow.h"
+
 #include "WidgetHostWindow.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBlueWindowTransformed, FVector2D, Position, FVector2D, Size);
@@ -26,10 +29,10 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	TSharedPtr<SWindow> sWindow;
+	TSharedPtr<SInputPropagatingWindow> sWindow;
 	TSharedPtr<SWidget> sContent;
 	TSharedPtr<SConstraintCanvas> sCanvas;
-	//TSharedPtr<SBox> sBox;
+	TSharedPtr<SInputPropagator> sBox;
 
 	FVector2D prevWindowPos = FVector2D(0, 0);
 	FVector2D prevWindowSize = FVector2D(0, 0);

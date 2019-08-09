@@ -67,19 +67,25 @@ void UWidgetHostWindow::OpenWindow(
 	FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
 	FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
 
-	sWindow = SNew(SWindow)
-		.Title(settings.Title)
-		.HasCloseButton(settings.HasCloseButton)
-		.IsInitiallyMaximized(false)
-		.ScreenPosition(offset)
-		.ClientSize(settings.Size)
-		.UseOSWindowBorder(settings.UseOSWindowBorder)
-		.CreateTitleBar(settings.CreateTitleBar)
-		.SizingRule(ESizingRule::UserSized)
-		.SupportsMaximize(settings.SupportsMaximize)
-		.SupportsMinimize(settings.SupportsMinimize)
-		.InitialOpacity(settings.Opacity)
-		.UserResizeBorder(settings.ResizeBorder);
+	sWindow = SNew(SInputPropagatingWindow)
+		.WindowArgs(SWindow::FArguments()
+			.Title(settings.Title)
+			.HasCloseButton(settings.HasCloseButton)
+			.IsInitiallyMaximized(false)
+			.ScreenPosition(offset)
+			.ClientSize(settings.Size)
+			.UseOSWindowBorder(settings.UseOSWindowBorder)
+			.CreateTitleBar(settings.CreateTitleBar)
+			.SizingRule(ESizingRule::UserSized)
+			.SupportsMaximize(settings.SupportsMaximize)
+			.SupportsMinimize(settings.SupportsMinimize)
+			.InitialOpacity(settings.Opacity)
+			.UserResizeBorder(settings.ResizeBorder)
+		)
+		.TargetWorld(GetWorld())
+		.HandleEvents(false)
+		.PropagateKeys(true)
+		.PropagateTouchGestures(true);
 
 	auto refWindow = sWindow.ToSharedRef();
 	FSlateApplication& slateApp = FSlateApplication::Get();
@@ -87,12 +93,19 @@ void UWidgetHostWindow::OpenWindow(
 
 	outContent = Content = CreateWidget<UUserWidget>(owner, content);
 	sContent = Content->TakeWidget();
-	/*sBox = SNew(SBox)
-		.HAlign(EHorizontalAlignment::HAlign_Fill)
-		.VAlign(EVerticalAlignment::VAlign_Fill)
-		.WidthOverride(FOptionalSize(settings.Size.X))
-		.HeightOverride(FOptionalSize(settings.Size.Y))
-		.Content()[ sContent.ToSharedRef() ];*/
+
+	sBox = SNew(SInputPropagator)
+		.BoxArgs(SBox::FArguments()
+			.HAlign(EHorizontalAlignment::HAlign_Fill)
+			.VAlign(EVerticalAlignment::VAlign_Fill)
+			.WidthOverride(FOptionalSize(settings.Size.X))
+			.HeightOverride(FOptionalSize(settings.Size.Y))
+		)
+		.TargetWorld(GetWorld())
+		.HandleEvents(true)
+		.PropagateKeys(false)
+		.PropagateTouchGestures(false)
+		.Content()[ sContent.ToSharedRef() ];
 
 	FOnWindowClosed onclosed;
 	onclosed.BindLambda([this](const TSharedRef < SWindow >& window)
@@ -113,7 +126,7 @@ void UWidgetHostWindow::OpenWindow(
 	});
 	sWindow->SetOnWindowMoved(onmoved);
 
-	sWindow->SetContent(sContent.ToSharedRef());
+	sWindow->SetContent(sBox.ToSharedRef());
 	SetSettings(settings, true);
 }
 
