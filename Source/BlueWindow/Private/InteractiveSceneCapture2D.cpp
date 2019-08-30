@@ -215,7 +215,7 @@ void AInteractiveSceneCapture2D::BeginPointer(int SourceId, ETouchIndex::Type Fi
 	ray.FingerIndex = FingerIndex;
 	ray.UniqueId = currid;
 	ray.SourceId = SourceId;
-	ray.SourceSceneCapture = this;
+	//ray.SourceSceneCapture = this;
 	ray.PointerEvent = pointerEvent;
 
 	CastPointerRay(ray, NormalizedCoords, true);

@@ -51,9 +51,6 @@ struct BLUEWINDOW_API FPointerRay
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
 		float AgeInSeconds = 0.0f;
 
-	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
-		class AInteractiveSceneCapture2D* SourceSceneCapture = nullptr;
-
 	void Age(float delta);
 };
 
