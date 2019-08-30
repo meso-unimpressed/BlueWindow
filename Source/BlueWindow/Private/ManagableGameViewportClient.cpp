@@ -2,6 +2,7 @@
 
 
 #include "ManagableGameViewportClient.h"
+#include "Engine/Engine.h"
 #include "SWindow.h"
 
 uint64_t UManagableGameViewportClient::GetMonitorOrderComparer(FMonitorInfo moninfo, int64 minleft, int64 mintop)
@@ -10,6 +11,12 @@ uint64_t UManagableGameViewportClient::GetMonitorOrderComparer(FMonitorInfo moni
 	uint64_t t = (uint64_t)((int64)moninfo.DisplayRect.Top - mintop) & 0x00000000FFFFFFFF;
 	uint64_t res = (l << 32) | t;
 	return res;
+}
+
+void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice /* = true */)
+{
+	UGameViewportClient::Init(WorldContext, OwningGameInstance, bCreateNewAudioDevice);
+	UpdateDisplayMetrics();
 }
 
 void UManagableGameViewportClient::UpdateDisplayMetrics()
@@ -80,4 +87,11 @@ void UManagableGameViewportClient::SetSettings(FBlueWindowSettings settings, boo
 	}
 
 	Settings = settings;
+}
+
+UManagableGameViewportClient* UManagableGameViewportClient::GetManagableViewport(bool& Success)
+{
+	UManagableGameViewportClient* res = Cast<UManagableGameViewportClient>(GEngine->GameViewport);
+	Success = res ? true : false;
+	return res;
 }

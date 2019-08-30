@@ -25,8 +25,9 @@ protected:
 
 	FORCEINLINE FMonitorInfo GetMonitor(int i)
 	{
-		if (Monitors.Num() <= 0) return FMonitorInfo();
-		return Monitors[i % Monitors.Num()];
+		return Monitors.Num() <= 0 ?
+			FMonitorInfo() :
+			Monitors[i % Monitors.Num()];
 	}
 
 	uint64_t GetMonitorOrderComparer(FMonitorInfo moninfo, int64 minleft, int64 mintop);
@@ -35,12 +36,17 @@ protected:
 
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+	virtual void Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice = true) override;
+
+	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
 		void UpdateDisplayMetrics();
 
-	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
 		FBlueWindowSettings GetSettings() { return Settings; }
 
-	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
 		void SetSettings(FBlueWindowSettings settings, bool force);
+
+	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
+		static UManagableGameViewportClient* GetManagableViewport(bool& Success);
 };

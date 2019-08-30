@@ -35,7 +35,7 @@ void UWidgetHostWindow::BeginPlay()
 void UWidgetHostWindow::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	auto actor = GetOwner();
+	//auto actor = GetOwner();
 
 	if(sWindow.IsValid())
 	{
