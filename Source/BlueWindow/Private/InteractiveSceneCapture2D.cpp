@@ -293,8 +293,3 @@ void AInteractiveSceneCapture2D::OnInterpToggle(bool bEnable)
 	CaptureComponent2D->SetVisibility(bEnable);
 }
 
-void FPointerRay::Age(float delta)
-{
-	AgeInFrames++;
-	AgeInSeconds += delta;
-}
