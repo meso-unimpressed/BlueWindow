@@ -5,8 +5,11 @@
 #include "CoreMinimal.h"
 #include "Engine/GameViewportClient.h"
 #include "BlueWindowSettings.h"
+#include "Events.h"
 
 #include "ManagableGameViewportClient.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FViewportTouchEventDelegate, FPointerEvent, Pointer);
 
 /**
  * 
@@ -34,19 +37,50 @@ protected:
 
 	FBlueWindowSettings Settings;
 
+	TMap<uint32, FVector2D> LastTouchLocations;
+
+	FPointerEvent GetPointerEvent(uint32 Handle, FVector2D TouchLocation);
+	FPointerEvent GetPointerEventWithDelta(uint32 Handle, FVector2D TouchLocation);
+
 public:
 
 	virtual void Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice = true) override;
 
-	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
+	virtual bool InputTouch (
+		FViewport* Viewport,
+		int32 ControllerId,
+		uint32 Handle,
+		ETouchType::Type Type,
+		const FVector2D& TouchLocation,
+		float Force,
+		FDateTime DeviceTimestamp,
+		uint32 TouchpadIndex
+	) override;
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
 		void UpdateDisplayMetrics();
 
-	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
 		FBlueWindowSettings GetSettings() { return Settings; }
 
-	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
 		void SetSettings(FBlueWindowSettings settings, bool force);
 
-	UFUNCTION(BlueprintCallable, Category = "ManagableViewport")
+	UFUNCTION(BlueprintPure, Category = "BlueWindow|ManagableViewport")
 		static UManagableGameViewportClient* GetManagableViewport(bool& Success);
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+		FViewportTouchEventDelegate OnTouchBegin;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+		FViewportTouchEventDelegate OnTouchFirstMove;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+		FViewportTouchEventDelegate OnTouchMove;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+		FViewportTouchEventDelegate OnTouchStationary;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+		FViewportTouchEventDelegate OnTouchEnded;
 };

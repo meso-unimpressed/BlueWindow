@@ -13,10 +13,81 @@ uint64_t UManagableGameViewportClient::GetMonitorOrderComparer(FMonitorInfo moni
 	return res;
 }
 
+FPointerEvent UManagableGameViewportClient::GetPointerEvent(uint32 Handle, FVector2D TouchLocation)
+{
+	return FPointerEvent(
+		Handle,
+		TouchLocation,
+		TouchLocation,
+		FVector2D::ZeroVector,
+		FTouchKeySet::EmptySet,
+		FModifierKeysState()
+	);
+}
+
+FPointerEvent UManagableGameViewportClient::GetPointerEventWithDelta(uint32 Handle, FVector2D TouchLocation)
+{
+	return FPointerEvent(
+		Handle,
+		TouchLocation,
+		LastTouchLocations[Handle],
+		TouchLocation - LastTouchLocations[Handle],
+		FTouchKeySet::EmptySet,
+		FModifierKeysState()
+	);
+}
+
 void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice /* = true */)
 {
 	UGameViewportClient::Init(WorldContext, OwningGameInstance, bCreateNewAudioDevice);
 	UpdateDisplayMetrics();
+}
+
+bool UManagableGameViewportClient::InputTouch(FViewport* Viewport, int32 ControllerId, uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
+{
+	bool res = UGameViewportClient::InputTouch(Viewport, ControllerId, Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
+
+	FPointerEvent pevent;
+	switch (Type)
+	{
+	case ETouchType::Began:
+		pevent = GetPointerEvent(Handle, TouchLocation);
+		OnTouchBegin.Broadcast(pevent);
+		LastTouchLocations.Add(Handle, TouchLocation);
+		break;
+
+	case ETouchType::Moved:
+		pevent = GetPointerEventWithDelta(Handle, TouchLocation);
+		OnTouchMove.Broadcast(pevent);
+		LastTouchLocations[Handle] = TouchLocation;
+		break;
+
+	case ETouchType::Stationary:
+		pevent = GetPointerEventWithDelta(Handle, TouchLocation);
+		OnTouchStationary.Broadcast(pevent);
+		LastTouchLocations[Handle] = TouchLocation;
+		break;
+
+	case ETouchType::ForceChanged:
+		break;
+
+	case ETouchType::FirstMove:
+		pevent = GetPointerEventWithDelta(Handle, TouchLocation);
+		OnTouchFirstMove.Broadcast(pevent);
+		LastTouchLocations[Handle] = TouchLocation;
+		break;
+
+	case ETouchType::Ended:
+		pevent = GetPointerEvent(Handle, TouchLocation);
+		OnTouchEnded.Broadcast(pevent);
+		LastTouchLocations.Remove(Handle);
+		break;
+
+	default:
+		break;
+	}
+
+	return res;
 }
 
 void UManagableGameViewportClient::UpdateDisplayMetrics()
@@ -60,10 +131,11 @@ void UManagableGameViewportClient::UpdateDisplayMetrics()
 void UManagableGameViewportClient::SetSettings(FBlueWindowSettings settings, bool force)
 {
 #if WITH_EDITOR
-	if (IsSimulateInEditorViewport()) return;
+	if (IsSimulateInEditorViewport() || bIsPlayInEditorViewport) return;
 #endif
 
 	auto sWindow = GetWindow();
+	if (sWindow.IsValid()) return;
 
 	if (Settings.TargetMonitor != settings.TargetMonitor ||
 		Settings.TopLeftOffset != settings.TopLeftOffset ||
