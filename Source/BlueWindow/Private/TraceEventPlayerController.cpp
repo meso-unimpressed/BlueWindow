@@ -128,6 +128,8 @@ FPointerEvent ATraceEventPlayerController::GetPointerEvent(uint32 Handle, FVecto
 
 FPointerEvent ATraceEventPlayerController::GetPointerEventWithDelta(uint32 Handle, FVector2D TouchLocation)
 {
+	if (!LastTouchLocations.Contains(Handle))
+		LastTouchLocations.Add(Handle, TouchLocation);
 	return FPointerEvent(
 		Handle,
 		TouchLocation,

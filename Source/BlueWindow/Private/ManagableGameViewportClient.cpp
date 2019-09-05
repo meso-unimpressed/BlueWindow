@@ -27,6 +27,8 @@ FPointerEvent UManagableGameViewportClient::GetPointerEvent(uint32 Handle, FVect
 
 FPointerEvent UManagableGameViewportClient::GetPointerEventWithDelta(uint32 Handle, FVector2D TouchLocation)
 {
+	if (!LastTouchLocations.Contains(Handle))
+		LastTouchLocations.Add(Handle, TouchLocation);
 	return FPointerEvent(
 		Handle,
 		TouchLocation,
