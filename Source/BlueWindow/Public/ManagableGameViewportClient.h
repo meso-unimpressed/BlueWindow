@@ -63,7 +63,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
 		void UpdateDisplayMetrics();
 
-	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
+	UFUNCTION(BlueprintPure, Category = "BlueWindow|ManagableViewport")
 		UTexture2D* GetViewportTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
