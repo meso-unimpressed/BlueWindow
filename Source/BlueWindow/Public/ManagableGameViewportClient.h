@@ -42,6 +42,9 @@ protected:
 	FPointerEvent GetPointerEvent(uint32 Handle, FVector2D TouchLocation);
 	FPointerEvent GetPointerEventWithDelta(uint32 Handle, FVector2D TouchLocation);
 
+	UPROPERTY()
+		UTexture2D* ViewportCopy;
+
 public:
 
 	virtual void Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice = true) override;
@@ -59,6 +62,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
 		void UpdateDisplayMetrics();
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
+		UTexture2D* GetViewportTexture();
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
 		FBlueWindowSettings GetSettings() { return Settings; }
@@ -83,4 +89,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
 		FViewportTouchEventDelegate OnTouchEnded;
+
+	virtual void Tick(float DeltaTime) override;
+
 };

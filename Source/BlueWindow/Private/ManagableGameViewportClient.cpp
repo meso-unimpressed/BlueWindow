@@ -3,6 +3,7 @@
 
 #include "ManagableGameViewportClient.h"
 #include "Engine/Engine.h"
+#include "Engine/Texture2D.h"
 #include "SWindow.h"
 
 uint64_t UManagableGameViewportClient::GetMonitorOrderComparer(FMonitorInfo moninfo, int64 minleft, int64 mintop)
@@ -42,6 +43,7 @@ FPointerEvent UManagableGameViewportClient::GetPointerEventWithDelta(uint32 Hand
 void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice /* = true */)
 {
 	UGameViewportClient::Init(WorldContext, OwningGameInstance, bCreateNewAudioDevice);
+
 	UpdateDisplayMetrics();
 }
 
@@ -130,6 +132,11 @@ void UManagableGameViewportClient::UpdateDisplayMetrics()
 	}
 }
 
+UTexture2D* UManagableGameViewportClient::GetViewportTexture()
+{
+	return ViewportCopy;
+}
+
 void UManagableGameViewportClient::SetSettings(FBlueWindowSettings settings, bool force)
 {
 #if WITH_EDITOR
@@ -168,4 +175,47 @@ UManagableGameViewportClient* UManagableGameViewportClient::GetManagableViewport
 	UManagableGameViewportClient* res = Cast<UManagableGameViewportClient>(GEngine->GameViewport);
 	Success = res ? true : false;
 	return res;
+}
+
+void UManagableGameViewportClient::Tick(float DeltaTime)
+{
+	UGameViewportClient::Tick(DeltaTime);
+
+	if (!Viewport) return;
+	FIntPoint vps = Viewport->GetSizeXY();
+	const FTexture2DRHIRef& vpTex = Viewport->GetRenderTargetTexture();
+
+	if (!ViewportCopy)
+	{
+		ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, vpTex->GetFormat());
+		ViewportCopy->UpdateResource();
+	}
+
+	if (ViewportCopy->GetSizeX() != vpTex->GetSizeX() || ViewportCopy->GetSizeY() != vpTex->GetSizeY())
+	{
+		ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, vpTex->GetFormat());
+		ViewportCopy->UpdateResource();
+	}
+
+
+	ENQUEUE_RENDER_COMMAND(void)([this, vpTex](FRHICommandListImmediate& RHICmdList)
+	{
+		FRHICopyTextureInfo info;
+		info.DestMipIndex = 0;
+		info.DestPosition = FIntVector::ZeroValue;
+		info.DestSliceIndex = 0;
+		info.NumMips = 1;
+		info.NumSlices = 1;
+		info.Size = FIntVector(vpTex->GetSizeX(), vpTex->GetSizeY(), 1);
+		info.SourceMipIndex = 0;
+		info.SourcePosition = FIntVector::ZeroValue;
+		info.SourceSliceIndex = 0;
+
+		auto dstRes = (FTexture2DResource*)ViewportCopy->Resource;
+		GDynamicRHI->RHIGetDefaultContext()->RHICopyTexture(
+			vpTex.GetReference(),
+			dstRes->GetTexture2DRHI(),
+			info
+		);
+	});
 }
