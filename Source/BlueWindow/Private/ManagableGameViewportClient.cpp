@@ -182,8 +182,11 @@ void UManagableGameViewportClient::Tick(float DeltaTime)
 	UGameViewportClient::Tick(DeltaTime);
 
 	if (!Viewport) return;
-	FIntPoint vps = Viewport->GetSizeXY();
 	const FTexture2DRHIRef& vpTex = Viewport->GetRenderTargetTexture();
+
+	if (!vpTex) return;
+
+	FIntPoint vps = Viewport->GetSizeXY();
 
 	if (!ViewportCopy)
 	{
