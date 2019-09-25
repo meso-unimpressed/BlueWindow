@@ -30,12 +30,14 @@ void ATraceEventActor::NotifyActorOnLineTraceHitBegin(FPointerRay Pointer)
 	MomentaryPointerRays.Add(Pointer.UniqueId, Pointer);
 	PersistentPointerRays.Add(Pointer.UniqueId, Pointer);
 	ReceiveActorOnLineTraceHitBegin(Pointer);
+	OnLineTraceHitBegin.Broadcast(Pointer);
 }
 
 void ATraceEventActor::NotifyActorOnLineTraceHitEnter(FPointerRay Pointer)
 {
 	MomentaryPointerRays.Add(Pointer.UniqueId, Pointer);
 	ReceiveActorOnLineTraceHitEnter(Pointer);
+	OnLineTraceHitEnter.Broadcast(Pointer);
 }
 
 void ATraceEventActor::NotifyActorOnLineTraceHitMove(FPointerRay Pointer)
@@ -47,12 +49,14 @@ void ATraceEventActor::NotifyActorOnLineTraceHitMove(FPointerRay Pointer)
 		PersistentPointerRays.Add(Pointer.UniqueId, Pointer);
 
 	ReceiveActorOnLineTraceHitMove(Pointer);
+	OnLineTraceHitMove.Broadcast(Pointer);
 }
 
 void ATraceEventActor::NotifyActorOnLineTraceHitLeave(FPointerRay Pointer)
 {
 	MomentaryPointerRays.Remove(Pointer.UniqueId);
 	ReceiveActorOnLineTraceHitLeave(Pointer);
+	OnLineTraceHitLeave.Broadcast(Pointer);
 }
 
 void ATraceEventActor::NotifyActorOnLineTraceHitEnd(FPointerRay Pointer)
@@ -60,12 +64,14 @@ void ATraceEventActor::NotifyActorOnLineTraceHitEnd(FPointerRay Pointer)
 	MomentaryPointerRays.Remove(Pointer.UniqueId);
 	PersistentPointerRays.Remove(Pointer.UniqueId);
 	ReceiveActorOnLineTraceHitEnd(Pointer);
+	OnLineTraceHitEnd.Broadcast(Pointer);
 
 	if (Pointer.BeganOnActor)
 	{
 		if (Pointer.BeganOnActor == this)
 		{
 			ReceiveActorOnLineTraceHitPressed(Pointer);
+			OnLineTraceHitPressed.Broadcast(Pointer);
 		}
 	}
 }
@@ -75,4 +81,5 @@ void ATraceEventActor::NotifyActorOnOriginatedLineTraceEnd(FPointerRay Pointer)
 	MomentaryPointerRays.Remove(Pointer.UniqueId);
 	PersistentPointerRays.Remove(Pointer.UniqueId);
 	ReceiveActorOnOriginatedLineTraceEnd(Pointer);
+	OnOriginatedLineTraceEnd.Broadcast(Pointer);
 }
