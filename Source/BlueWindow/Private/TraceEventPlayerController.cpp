@@ -7,6 +7,8 @@
 #include "ManagableGameViewportClient.h"
 #include "Engine/Engine.h"
 #include "TraceEventActor.h"
+#include "Components/PrimitiveComponent.h"
+#include "BlueWindowBPLibrary.h"
 
 void ATraceEventPlayerController::CastPointerRay(FPointerRay& ray, FVector2D NormalizedCoords, bool begin, bool fromLocalPlayer)
 {
@@ -22,19 +24,14 @@ void ATraceEventPlayerController::CastPointerRay(FPointerRay& ray, FVector2D Nor
 	ATraceEventActor* prevTraceActor = nullptr;
 	if (prevActor) prevTraceActor = Cast<ATraceEventActor>(prevActor);
 
-	// Set up collision parameters
-	FCollisionQueryParams CollisionParams;
-	//CollisionParams.AddIgnoredActors(ActorsToIgnore);
-	CollisionParams.bReturnFaceIndex = false; // TODO: make parameter
-	CollisionParams.bReturnPhysicalMaterial = false; // TODO: make parameter
-	CollisionParams.bTraceComplex = false; // TODO: make parameter
+	TArray<FHitResult> tempHits;
+	FTraceResultFilterDelegate filter;
+	filter.BindDynamic(this, &ATraceEventPlayerController::TraceResultPredicate);
 
-	// Trace the line
-	ray.Hit = GetWorld()->LineTraceSingleByObjectType(
-		ray.HitResult, s, e,
-		FCollisionObjectQueryParams::DefaultObjectQueryParam,
-		CollisionParams);
+	ray.Hit = UBlueWindowBPLibrary::LineTraceFiltered(
+		GetWorld(), s, e, filter, tempHits, ray.HitResult);
 
+	LastActor = ray.Hit ? ray.HitResult.GetActor() : nullptr;
 	//DrawDebugLineTraceSingle(GetWorld(), s, e, DrawDebugType.GetValue(), ray.Hit, ray.HitResult, TraceColor, TraceHitColor, DrawTime);
 
 	if (ray.Hit)
@@ -138,6 +135,16 @@ FPointerEvent ATraceEventPlayerController::GetPointerEventWithDelta(uint32 Handl
 		FTouchKeySet::EmptySet,
 		ModifierKeysDummy
 	);
+}
+
+bool ATraceEventPlayerController::TraceResultPredicate(FHitResult Hit)
+{
+	bool ignore = false;
+	if (Hit.Actor.IsValid())
+		ignore = Hit.Actor->bHidden || Hit.Actor->Tags.Contains(TEXT("TraceIgnore"));
+	if (!ignore && Hit.Component.IsValid())
+		ignore = Hit.Component->bHiddenInGame || Hit.Component->ComponentTags.Contains(TEXT("TraceIgnore"));
+	return !ignore;
 }
 
 void ATraceEventPlayerController::Tick(float DeltaTime)

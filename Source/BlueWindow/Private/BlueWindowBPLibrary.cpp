@@ -2,7 +2,9 @@
 
 #include "BlueWindowBPLibrary.h"
 #include "BlueWindow.h"
+#include "CoreMinimal.h"
 #include "DrawElements.h"
+#include <limits>
 
 UBlueWindowBPLibrary::UBlueWindowBPLibrary(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer)
@@ -105,6 +107,45 @@ void UBlueWindowBPLibrary::DrawSplineDrawSpace(
 		ESlateDrawEffect::None,
 		Tint);
 }
+
+#pragma optimize("", off)
+
+bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVector End, FTraceResultFilterDelegate Filter, TArray<FHitResult>& OutHits, FHitResult& FirstHit)
+{
+	OutHits = TArray<FHitResult>();
+	TArray<FHitResult> tempHits;
+
+	FCollisionQueryParams CollisionParams;
+	//CollisionParams.AddIgnoredActors(ActorsToIgnore);
+	CollisionParams.bReturnFaceIndex = false;
+	CollisionParams.bReturnPhysicalMaterial = false;
+	CollisionParams.bTraceComplex = false;
+
+	FirstHit = FHitResult();
+
+	float mindist = std::numeric_limits<float>::max();
+
+	World->LineTraceMultiByObjectType(
+		tempHits, Start, End,
+		FCollisionObjectQueryParams::DefaultObjectQueryParam,
+		CollisionParams);
+
+	for(FHitResult hit : tempHits)
+	{
+		if(hit.Distance <= 0) continue;
+		if (!Filter.Execute(hit)) continue;
+
+		OutHits.Add(hit);
+		if(hit.Distance < mindist)
+		{
+			mindist = hit.Distance;
+			FirstHit = hit;
+		}
+	}
+	return OutHits.Num() > 0;
+}
+
+#pragma optimize("", on)
 
 void UBlueWindowBPLibrary::DrawLinesThick(
 	FPaintContext& Context,

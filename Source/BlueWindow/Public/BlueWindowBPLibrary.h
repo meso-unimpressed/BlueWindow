@@ -6,6 +6,9 @@
 #include "UserWidget.h"
 
 #include "BlueWindowBPLibrary.generated.h"
+struct FHitResult;
+
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FTraceResultFilterDelegate, FHitResult, Hit);
 
 /* 
 *	Function library class.
@@ -91,13 +94,12 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 		FLinearColor Tint = FLinearColor::White,
 		float Thickness = 1.0);
 
-	//TODO: Brushed lines support
-	/*UFUNCTION(BlueprintCallable, meta = (Keywords = "Draw lines with a brush applied and with constant thickness"), Category = "Painting")
-	static void DrawLinesBrushed(
-		FPaintContext& Context,
-		const TArray<FVector2D>& Points,
-		FLinearColor Tint,
-		const FSlateBrush* InBrush,
-		bool bAntiAlias,
-		float Thickness);*/
+	static bool LineTraceFiltered(
+		UWorld* World,
+		FVector Start,
+		FVector End,
+		FTraceResultFilterDelegate Filter,
+		TArray<FHitResult>& OutHits,
+		FHitResult& FirstHit
+	);
 };

@@ -38,14 +38,20 @@ protected:
 
 	TMap<uint32, FVector2D> LastTouchLocations;
 
+	UFUNCTION()
+	bool TraceResultPredicate(FHitResult Hit);
+
 public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|ManagableViewport")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "BlueWindow")
+		AActor* LastActor;
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow")
 		TMap<int, FPointerRay> CurrentPointers;
 
-	UFUNCTION(BlueprintPure, Category = "BlueWindow|ManagableViewport")
+	UFUNCTION(BlueprintPure, Category = "BlueWindow")
 		FMatrix GetViewProjectionMatrix();
 
 	virtual bool InputTouch(
@@ -75,45 +81,45 @@ public:
 
 	void EndPointer(int SourceId, ETouchIndex::Type FingerIndex, bool fromLocalPlayer);
 
-	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
 		void BeginPointer(UWidget* SourceWidget, FGeometry geometry, FPointerEvent pointerEvent);
 
-	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
 		void MovePointer(UWidget* SourceWidget, FGeometry geometry, FPointerEvent pointerEvent);
 
-	UFUNCTION(BlueprintCallable, Category = "BlueWindow|ManagableViewport")
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
 		void EndPointer(UWidget* SourceWidget, FPointerEvent pointerEvent);
 
 	UFUNCTION()
 		void TouchBegin(FPointerEvent Pointer);
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 		FPlayerPointerRayEventSignature OnTouchBegin;
 
 	UFUNCTION()
 		void TouchFirstMove(FPointerEvent Pointer);
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 		FPlayerPointerRayEventSignature OnTouchFirstMove;
 
 	UFUNCTION()
 		void TouchMove(FPointerEvent Pointer);
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 		FPlayerPointerRayEventSignature OnTouchMove;
 
 	UFUNCTION()
 		void TouchStationary(FPointerEvent Pointer);
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 		FPlayerPointerRayEventSignature OnTouchStationary;
 
 	UFUNCTION()
 		void TouchEnded(FPointerEvent Pointer);
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 		FPlayerPointerRayEventSignature OnTouchEnded;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BlueWindow|ManagableViewport")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BlueWindow")
 		float RayLength = 250000;
 };
