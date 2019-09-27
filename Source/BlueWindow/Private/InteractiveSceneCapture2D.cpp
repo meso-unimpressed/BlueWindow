@@ -6,7 +6,9 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "TraceEventActor.h"
 #include "SceneView.h"
+#include "Components/PrimitiveComponent.h"
 #include "DrawDebugHelpers.h"
+#include "BlueWindowBPLibrary.h"
 
 void AInteractiveSceneCapture2D::ComputeViewInfo()
 {
@@ -64,18 +66,12 @@ void AInteractiveSceneCapture2D::CastPointerRay(FPointerRay& ray, FVector2D Norm
 	ATraceEventActor* prevTraceActor = nullptr;
 	if (prevActor) prevTraceActor = Cast<ATraceEventActor>(prevActor);
 
-	// Set up collision parameters
-	FCollisionQueryParams CollisionParams;
-	//CollisionParams.AddIgnoredActors(ActorsToIgnore);
-	CollisionParams.bReturnFaceIndex = false; // TODO: make parameter
-	CollisionParams.bReturnPhysicalMaterial = false; // TODO: make parameter
-	CollisionParams.bTraceComplex = TraceComplex;
+	TArray<FHitResult> tempHits;
+	FTraceResultFilterDelegate filter;
+	filter.BindDynamic(this, &AInteractiveSceneCapture2D::TraceResultPredicate);
 
-	// Trace the line
-	ray.Hit = GetWorld()->LineTraceSingleByObjectType(
-		ray.HitResult, s, e,
-		FCollisionObjectQueryParams::DefaultObjectQueryParam,
-		CollisionParams);
+	ray.Hit = UBlueWindowBPLibrary::LineTraceFiltered(
+		GetWorld(), s, e, filter, tempHits, ray.HitResult);
 
 	if (DrawDebugHelpers)
 	{
@@ -172,6 +168,16 @@ FVector2D AInteractiveSceneCapture2D::ProjectWorldToScreen(FVector World, float&
 	FVector res3 = FVector(res4.X, res4.Y, res4.Z) / res4.W;
 	Depth = res3.Z;
 	return FVector2D(res3.X, res3.Y);
+}
+
+bool AInteractiveSceneCapture2D::TraceResultPredicate(FHitResult Hit)
+{
+	bool ignore = false;
+	if (Hit.Actor.IsValid())
+		ignore = Hit.Actor->bHidden || Hit.Actor->Tags.Contains(TEXT("TraceIgnore"));
+	if (!ignore && Hit.Component.IsValid())
+		ignore = Hit.Component->bHiddenInGame || Hit.Component->ComponentTags.Contains(TEXT("TraceIgnore"));
+	return !ignore;
 }
 
 // Called when the game starts or when spawned

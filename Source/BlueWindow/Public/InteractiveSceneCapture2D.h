@@ -46,6 +46,9 @@ public:
 	UPROPERTY(Category = DecalActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class USceneCaptureComponent2D* CaptureComponent2D;
 
+	UFUNCTION()
+		bool TraceResultPredicate(FHitResult Hit);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

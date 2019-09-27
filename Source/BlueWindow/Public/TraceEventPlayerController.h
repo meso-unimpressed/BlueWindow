@@ -39,14 +39,11 @@ protected:
 	TMap<uint32, FVector2D> LastTouchLocations;
 
 	UFUNCTION()
-	bool TraceResultPredicate(FHitResult Hit);
+		bool TraceResultPredicate(FHitResult Hit);
 
 public:
 
 	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "BlueWindow")
-		AActor* LastActor;
 
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow")
 		TMap<int, FPointerRay> CurrentPointers;

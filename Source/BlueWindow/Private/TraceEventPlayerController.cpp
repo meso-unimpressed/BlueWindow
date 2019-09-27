@@ -31,7 +31,6 @@ void ATraceEventPlayerController::CastPointerRay(FPointerRay& ray, FVector2D Nor
 	ray.Hit = UBlueWindowBPLibrary::LineTraceFiltered(
 		GetWorld(), s, e, filter, tempHits, ray.HitResult);
 
-	LastActor = ray.Hit ? ray.HitResult.GetActor() : nullptr;
 	//DrawDebugLineTraceSingle(GetWorld(), s, e, DrawDebugType.GetValue(), ray.Hit, ray.HitResult, TraceColor, TraceHitColor, DrawTime);
 
 	if (ray.Hit)

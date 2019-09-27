@@ -108,8 +108,6 @@ void UBlueWindowBPLibrary::DrawSplineDrawSpace(
 		Tint);
 }
 
-#pragma optimize("", off)
-
 bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVector End, FTraceResultFilterDelegate Filter, TArray<FHitResult>& OutHits, FHitResult& FirstHit)
 {
 	OutHits = TArray<FHitResult>();
@@ -144,8 +142,6 @@ bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVect
 	}
 	return OutHits.Num() > 0;
 }
-
-#pragma optimize("", on)
 
 void UBlueWindowBPLibrary::DrawLinesThick(
 	FPaintContext& Context,

@@ -94,6 +94,13 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 		FLinearColor Tint = FLinearColor::White,
 		float Thickness = 1.0);
 
+	/**
+	 * Trace a line and filter hits based on a delegate
+	 * NOTE: the original trace function returns on the first blocking hit.
+	 * So if that fisrt blocking hit fails the delegate then this function
+	 * will return no hits and a false. If you want to avoid that set your objects
+	 * to Overlap collision. Might be fixed in the future.
+	 */
 	static bool LineTraceFiltered(
 		UWorld* World,
 		FVector Start,
