@@ -144,7 +144,7 @@ void UManagableGameViewportClient::SetSettings(FBlueWindowSettings settings, boo
 #endif
 
 	auto sWindow = GetWindow();
-	if (sWindow.IsValid()) return;
+	if (!sWindow.IsValid()) return;
 
 	if (Settings.TargetMonitor != settings.TargetMonitor ||
 		Settings.TopLeftOffset != settings.TopLeftOffset ||
