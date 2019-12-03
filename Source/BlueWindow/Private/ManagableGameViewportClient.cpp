@@ -40,6 +40,18 @@ FPointerEvent UManagableGameViewportClient::GetPointerEventWithDelta(uint32 Hand
 	);
 }
 
+FPointerEvent UManagableGameViewportClient::GetMouseEventWithDelta(FVector2D MouseLocation)
+{
+	return FPointerEvent(
+		0,
+		MouseLocation,
+		LastMouseLocation,
+		MouseLocation - LastMouseLocation,
+		TSet<FKey>(),
+		FModifierKeysState()
+	);
+}
+
 void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice /* = true */)
 {
 	UGameViewportClient::Init(WorldContext, OwningGameInstance, bCreateNewAudioDevice);
@@ -221,4 +233,21 @@ void UManagableGameViewportClient::Tick(float DeltaTime)
 			info
 		);
 	});
+}
+
+void UManagableGameViewportClient::MouseMove(FViewport* Viewport, int32 X, int32 Y)
+{
+	UGameViewportClient::MouseMove(Viewport, X, Y);
+	FVector2D currpos = FVector2D(X, Y);
+	if (FMath::IsNearlyZero(FVector2D::Distance(currpos, LastMouseLocation))) return;
+	FPointerEvent resEvent = GetMouseEventWithDelta(currpos);
+	OnMouseMove.Broadcast(resEvent);
+	LastMouseLocation = currpos;
+}
+
+void UManagableGameViewportClient::Activated(FViewport* InViewport, const FWindowActivateEvent& InActivateEvent)
+{
+	Super::Activated(InViewport, InActivateEvent);
+
+	SetSettings(Settings, true);
 }

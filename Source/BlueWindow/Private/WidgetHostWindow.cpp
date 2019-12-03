@@ -87,6 +87,61 @@ void UWidgetHostWindow::OpenWindow(
 		.PropagateKeys(true)
 		.PropagateTouchGestures(true);
 
+	sWindow->OnKeyDownEvent.AddLambda([this](FGeometry geometry, FKeyEvent keyEvent)
+	{
+		OnKeyDownEvent.Broadcast(geometry, keyEvent);
+	});
+
+	sWindow->OnKeyUpEvent.AddLambda([this](FGeometry geometry, FKeyEvent keyEvent)
+	{
+		OnKeyUpEvent.Broadcast(geometry, keyEvent);
+	});
+
+	sWindow->OnTouchGestureEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnTouchGestureEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnTouchStartedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnTouchStartedEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnTouchFirstMoveEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnTouchFirstMoveEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnTouchMovedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnTouchMovedEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnTouchForceChangedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnTouchForceChangedEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnTouchEndedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnTouchEndedEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnMouseButtonDownEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnMouseButtonDownEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnMouseButtonUpEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnMouseButtonUpEvent.Broadcast(geometry, pointerEvent);
+	});
+
+	sWindow->OnMouseMoveEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
+	{
+		OnMouseMoveEvent.Broadcast(geometry, pointerEvent);
+	});
+
 	auto refWindow = sWindow.ToSharedRef();
 	FSlateApplication& slateApp = FSlateApplication::Get();
 	slateApp.AddWindow(refWindow, true);

@@ -19,6 +19,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBlueWindowTransformed, FVector2D, Position, FVector2D, Size);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowResized);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowClosed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPointerEventDynDel, FGeometry, geometry, FPointerEvent, pointerEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FKeyEventDynDel, FGeometry, geometry, FKeyEvent, keyEvent);
 
 UCLASS( ClassGroup=(BlueWindow), meta=(BlueprintSpawnableComponent) )
 class BLUEWINDOW_API UWidgetHostWindow : public UActorComponent
@@ -93,4 +95,37 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 		FOnBlueWindowClosed OnWindowClosed;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FKeyEventDynDel OnKeyDownEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FKeyEventDynDel OnKeyUpEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnTouchGestureEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnTouchStartedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnTouchFirstMoveEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnTouchMovedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnTouchForceChangedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnTouchEndedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnMouseButtonDownEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnMouseButtonUpEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FPointerEventDynDel OnMouseMoveEvent;
 };

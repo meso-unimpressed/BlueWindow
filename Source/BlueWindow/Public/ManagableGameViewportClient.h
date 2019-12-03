@@ -22,6 +22,7 @@ class BLUEWINDOW_API UManagableGameViewportClient : public UGameViewportClient
 protected:
 	FVector2D prevWindowPos = FVector2D(0, 0);
 	FVector2D prevWindowSize = FVector2D(0, 0);
+	FVector2D LastMouseLocation;
 
 	TArray<FMonitorInfo> Monitors;
 	FDisplayMetrics DisplayMetrics;
@@ -41,6 +42,7 @@ protected:
 
 	FPointerEvent GetPointerEvent(uint32 Handle, FVector2D TouchLocation);
 	FPointerEvent GetPointerEventWithDelta(uint32 Handle, FVector2D TouchLocation);
+	FPointerEvent GetMouseEventWithDelta(FVector2D MouseLocation);
 
 	UPROPERTY()
 		UTexture2D* ViewportCopy;
@@ -76,6 +78,9 @@ public:
 		static UManagableGameViewportClient* GetManagableViewport(bool& Success);
 
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
+		FViewportTouchEventDelegate OnMouseMove;
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
 		FViewportTouchEventDelegate OnTouchBegin;
 
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
@@ -91,5 +96,10 @@ public:
 		FViewportTouchEventDelegate OnTouchEnded;
 
 	virtual void Tick(float DeltaTime) override;
+
+
+	void MouseMove(FViewport* Viewport, int32 X, int32 Y) override;
+
+	void Activated(FViewport* InViewport, const FWindowActivateEvent& InActivateEvent) override;
 
 };

@@ -20,8 +20,66 @@ void SInputPropagatingWindow::Construct(const FArguments& InArgs)
 	SWindow::Construct(InArgs._WindowArgs);
 }
 
+SInputPropagatingWindow::~SInputPropagatingWindow()
+{
+	OnKeyDownEvent.Clear();
+	OnKeyUpEvent.Clear();
+	OnTouchGestureEvent.Clear();
+	OnTouchStartedEvent.Clear();
+	OnTouchFirstMoveEvent.Clear();
+	OnTouchMovedEvent.Clear();
+	OnTouchForceChangedEvent.Clear();
+	OnTouchEndedEvent.Clear();
+}
+
+FReply SInputPropagatingWindow::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	OnMouseButtonDownEvent.Broadcast(MyGeometry, MouseEvent);
+
+	if (bDragAnywhere && MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		MoveResizeZone = WindowZone;
+		return FReply::Handled().CaptureMouse(SharedThis(this));
+	}
+	else
+	{
+		return FReply::Unhandled();
+	}
+}
+
+FReply SInputPropagatingWindow::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	OnMouseButtonUpEvent.Broadcast(MyGeometry, MouseEvent);
+
+	if (bDragAnywhere && this->HasMouseCapture() && MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		MoveResizeZone = EWindowZone::Unspecified;
+		return FReply::Handled().ReleaseMouseCapture();
+	}
+	else
+	{
+		return FReply::Unhandled();
+	}
+}
+
+FReply SInputPropagatingWindow::OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	OnMouseMoveEvent.Broadcast(MyGeometry, MouseEvent);
+
+	if (bDragAnywhere && this->HasMouseCapture() && MouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton) && MoveResizeZone != EWindowZone::TitleBar)
+	{
+		this->MoveWindowTo(ScreenPosition + MouseEvent.GetCursorDelta());
+		return FReply::Handled();
+	}
+	else
+	{
+		return FReply::Unhandled();
+	}
+}
+
 FReply SInputPropagatingWindow::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
+	OnKeyDownEvent.Broadcast(MyGeometry, InKeyEvent);
 	SWindow::OnKeyDown(MyGeometry, InKeyEvent);
 	IS_EVENT_ENABLED(PropagateKeys);
 	GET_PLAYERCONTROLLER;
@@ -31,6 +89,7 @@ FReply SInputPropagatingWindow::OnKeyDown(const FGeometry& MyGeometry, const FKe
 
 FReply SInputPropagatingWindow::OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent)
 {
+	OnKeyUpEvent.Broadcast(MyGeometry, InKeyEvent);
 	SWindow::OnKeyUp(MyGeometry, InKeyEvent);
 	IS_EVENT_ENABLED(PropagateKeys);
 	GET_PLAYERCONTROLLER;
@@ -40,6 +99,7 @@ FReply SInputPropagatingWindow::OnKeyUp(const FGeometry& MyGeometry, const FKeyE
 
 FReply SInputPropagatingWindow::OnTouchGesture(const FGeometry& MyGeometry, const FPointerEvent& GestureEvent)
 {
+	OnTouchGestureEvent.Broadcast(MyGeometry, GestureEvent);
 	SWindow::OnTouchGesture(MyGeometry, GestureEvent);
 	IS_EVENT_ENABLED(PropagateTouchGestures);
 	GET_PLAYERCONTROLLER;
@@ -50,6 +110,7 @@ FReply SInputPropagatingWindow::OnTouchGesture(const FGeometry& MyGeometry, cons
 
 FReply SInputPropagatingWindow::OnTouchStarted(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent)
 {
+	OnTouchStartedEvent.Broadcast(MyGeometry, InTouchEvent);
 	SWindow::OnTouchStarted(MyGeometry, InTouchEvent);
 	IS_EVENT_ENABLED(PropagateTouches);
 	GET_PLAYERCONTROLLER;
@@ -66,6 +127,7 @@ FReply SInputPropagatingWindow::OnTouchStarted(const FGeometry& MyGeometry, cons
 
 FReply SInputPropagatingWindow::OnTouchFirstMove(const FGeometry& MyGeometry, const FPointerEvent& TouchEvent)
 {
+	OnTouchFirstMoveEvent.Broadcast(MyGeometry, TouchEvent);
 	SWindow::OnTouchFirstMove(MyGeometry, TouchEvent);
 	IS_EVENT_ENABLED(PropagateTouches);
 	GET_PLAYERCONTROLLER;
@@ -82,6 +144,7 @@ FReply SInputPropagatingWindow::OnTouchFirstMove(const FGeometry& MyGeometry, co
 
 FReply SInputPropagatingWindow::OnTouchMoved(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent)
 {
+	OnTouchMovedEvent.Broadcast(MyGeometry, InTouchEvent);
 	SWindow::OnTouchMoved(MyGeometry, InTouchEvent);
 	IS_EVENT_ENABLED(PropagateTouches);
 	GET_PLAYERCONTROLLER;
@@ -98,6 +161,7 @@ FReply SInputPropagatingWindow::OnTouchMoved(const FGeometry& MyGeometry, const 
 
 FReply SInputPropagatingWindow::OnTouchForceChanged(const FGeometry& MyGeometry, const FPointerEvent& TouchEvent)
 {
+	OnTouchForceChangedEvent.Broadcast(MyGeometry, TouchEvent);
 	SWindow::OnTouchForceChanged(MyGeometry, TouchEvent);
 	IS_EVENT_ENABLED(PropagateTouches);
 	GET_PLAYERCONTROLLER;
@@ -114,6 +178,7 @@ FReply SInputPropagatingWindow::OnTouchForceChanged(const FGeometry& MyGeometry,
 
 FReply SInputPropagatingWindow::OnTouchEnded(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent)
 {
+	OnTouchEndedEvent.Broadcast(MyGeometry, InTouchEvent);
 	SWindow::OnTouchEnded(MyGeometry, InTouchEvent);
 	IS_EVENT_ENABLED(PropagateTouches);
 	GET_PLAYERCONTROLLER;
