@@ -47,7 +47,7 @@ FPointerEvent UManagableGameViewportClient::GetMouseEventWithDelta(FVector2D Mou
 		MouseLocation,
 		LastMouseLocation,
 		MouseLocation - LastMouseLocation,
-		TSet<FKey>(),
+		FTouchKeySet::EmptySet,
 		FModifierKeysState()
 	);
 }
