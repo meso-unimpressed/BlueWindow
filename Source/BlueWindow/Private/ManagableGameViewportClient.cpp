@@ -4,7 +4,26 @@
 #include "ManagableGameViewportClient.h"
 #include "Engine/Engine.h"
 #include "Engine/Texture2D.h"
+#include "Slate/SceneViewport.h"
 #include "SWindow.h"
+#include "HardwareInfo.h"
+
+//#if PLATFORM_WINDOWS && !defined(WINDOWS_PLATFORM_TYPES_GUARD)
+//#include "AllowWindowsPlatformTypes.h"
+//#define LOCAL_WINDOWS_PLATFORM_TYPES_GUARD
+//#endif
+//
+//#pragma warning (push)
+//#pragma warning (disable : 4389; disable : 4018; disable : 4245)
+//
+//#include <d3d11.h>
+//
+//#pragma warning (pop)
+//
+//#if PLATFORM_WINDOWS && defined(LOCAL_WINDOWS_PLATFORM_TYPES_GUARD)
+//#include "HideWindowsPlatformTypes.h"
+//#undef LOCAL_WINDOWS_PLATFORM_TYPES_GUARD
+//#endif
 
 uint64_t UManagableGameViewportClient::GetMonitorOrderComparer(FMonitorInfo moninfo, int64 minleft, int64 mintop)
 {
@@ -55,6 +74,13 @@ FPointerEvent UManagableGameViewportClient::GetMouseEventWithDelta(FVector2D Mou
 void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice /* = true */)
 {
 	UGameViewportClient::Init(WorldContext, OwningGameInstance, bCreateNewAudioDevice);
+
+	//currRHI = FHardwareInfo::GetHardwareInfo(NAME_RHI);
+	//if (currRHI.Equals("D3D11"))
+	//{
+	//	D3D11Device = (ID3D11Device*)GDynamicRHI->RHIGetNativeDevice();
+	//	D3D11Device->GetImmediateContext(&pImmediateContext);
+	//}
 
 	UpdateDisplayMetrics();
 }
@@ -193,46 +219,45 @@ void UManagableGameViewportClient::Tick(float DeltaTime)
 {
 	UGameViewportClient::Tick(DeltaTime);
 
-	if (!Viewport) return;
-	const FTexture2DRHIRef& vpTex = Viewport->GetRenderTargetTexture();
+	//if (!Viewport) return;
 
-	if (!vpTex) return;
+	//if (!currRHI.Equals("D3D11")) return;
 
-	FIntPoint vps = Viewport->GetSizeXY();
+	//FIntPoint vps = Viewport->GetSizeXY();
 
-	if (!ViewportCopy)
-	{
-		ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, vpTex->GetFormat());
-		ViewportCopy->UpdateResource();
-	}
+	//ENQUEUE_RENDER_COMMAND(void)([this, vps](FRHICommandListImmediate& RHICmdList)
+	//{
 
-	if (ViewportCopy->GetSizeX() != vpTex->GetSizeX() || ViewportCopy->GetSizeY() != vpTex->GetSizeY())
-	{
-		ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, vpTex->GetFormat());
-		ViewportCopy->UpdateResource();
-	}
+	//	if (!ViewportCopy)
+	//	{
+	//		ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, RhiVpTex->GetFormat());
+	//		ViewportCopy->UpdateResource();
+	//	}
 
+	//	if (ViewportCopy->GetSizeX() != vps.X || ViewportCopy->GetSizeY() != vps.Y)
+	//	{
+	//		ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, RhiVpTex->GetFormat());
+	//		ViewportCopy->UpdateResource();
+	//	}
 
-	ENQUEUE_RENDER_COMMAND(void)([this, vpTex](FRHICommandListImmediate& RHICmdList)
-	{
-		FRHICopyTextureInfo info;
-		info.DestMipIndex = 0;
-		info.DestPosition = FIntVector::ZeroValue;
-		info.DestSliceIndex = 0;
-		info.NumMips = 1;
-		info.NumSlices = 1;
-		info.Size = FIntVector(vpTex->GetSizeX(), vpTex->GetSizeY(), 1);
-		info.SourceMipIndex = 0;
-		info.SourcePosition = FIntVector::ZeroValue;
-		info.SourceSliceIndex = 0;
+	//	FRHICopyTextureInfo info;
+	//	info.DestMipIndex = 0;
+	//	info.DestPosition = FIntVector::ZeroValue;
+	//	info.DestSliceIndex = 0;
+	//	info.NumMips = 1;
+	//	info.NumSlices = 1;
+	//	info.Size = FIntVector(RhiVpTex->GetSizeX(), RhiVpTex->GetSizeY(), 1);
+	//	info.SourceMipIndex = 0;
+	//	info.SourcePosition = FIntVector::ZeroValue;
+	//	info.SourceSliceIndex = 0;
 
-		auto dstRes = (FTexture2DResource*)ViewportCopy->Resource;
-		GDynamicRHI->RHIGetDefaultContext()->RHICopyTexture(
-			vpTex.GetReference(),
-			dstRes->GetTexture2DRHI(),
-			info
-		);
-	});
+	//	auto dstRes = (FTexture2DResource*)ViewportCopy->Resource;
+	//	GDynamicRHI->RHIGetDefaultContext()->RHICopyTexture(
+	//		RhiVpTex.GetReference(),
+	//		dstRes->GetTexture2DRHI(),
+	//		info
+	//	);
+	//});
 }
 
 void UManagableGameViewportClient::MouseMove(FViewport* Viewport, int32 X, int32 Y)

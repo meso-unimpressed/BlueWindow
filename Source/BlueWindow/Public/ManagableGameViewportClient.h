@@ -2,6 +2,7 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "Engine/GameViewportClient.h"
 #include "BlueWindowSettings.h"
@@ -18,6 +19,11 @@ UCLASS()
 class BLUEWINDOW_API UManagableGameViewportClient : public UGameViewportClient
 {
 	GENERATED_BODY()
+private:
+	//ID3D11Device* D3D11Device = nullptr;
+	//ID3D11DeviceContext* pImmediateContext = nullptr;
+	//ID3D11Texture2D* nativeVpTex = nullptr;
+	//FString currRHI;
 
 protected:
 	FVector2D prevWindowPos = FVector2D(0, 0);
