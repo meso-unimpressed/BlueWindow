@@ -12,6 +12,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FViewportTouchEventDelegate, FPointerEvent, Pointer);
 
+class UGlobalInputProcessor;
+
 /**
  * 
  */
@@ -83,23 +85,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "BlueWindow|ManagableViewport")
 		static UManagableGameViewportClient* GetManagableViewport(bool& Success);
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
-		FViewportTouchEventDelegate OnMouseMove;
+	UPROPERTY(BlueprintReadWrite, Category = "BlueWindow")
+		UInputProcessorCollection* GlobalInputProcessors;
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
-		FViewportTouchEventDelegate OnTouchBegin;
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void AddInputTargetWidget(UUserWidget* widget);
 
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
-		FViewportTouchEventDelegate OnTouchFirstMove;
-
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
-		FViewportTouchEventDelegate OnTouchMove;
-
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
-		FViewportTouchEventDelegate OnTouchStationary;
-
-	UPROPERTY(BlueprintAssignable, Category = "BlueWindow|ManagableViewport")
-		FViewportTouchEventDelegate OnTouchEnded;
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void RemoveInputTargetWidget(UUserWidget* widget);
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -108,4 +101,5 @@ public:
 
 	void Activated(FViewport* InViewport, const FWindowActivateEvent& InActivateEvent) override;
 
+	FGeometry GetGeometry();
 };

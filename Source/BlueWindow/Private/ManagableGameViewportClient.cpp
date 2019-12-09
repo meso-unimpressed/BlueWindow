@@ -7,6 +7,8 @@
 #include "Slate/SceneViewport.h"
 #include "SWindow.h"
 #include "HardwareInfo.h"
+#include "UserWidget.h"
+#include "GlobalInputProcessor.h"
 
 //#if PLATFORM_WINDOWS && !defined(WINDOWS_PLATFORM_TYPES_GUARD)
 //#include "AllowWindowsPlatformTypes.h"
@@ -74,6 +76,7 @@ FPointerEvent UManagableGameViewportClient::GetMouseEventWithDelta(FVector2D Mou
 void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice /* = true */)
 {
 	UGameViewportClient::Init(WorldContext, OwningGameInstance, bCreateNewAudioDevice);
+	GlobalInputProcessors = NewObject<UInputProcessorCollection>(this);
 
 	//currRHI = FHardwareInfo::GetHardwareInfo(NAME_RHI);
 	//if (currRHI.Equals("D3D11"))
@@ -90,38 +93,29 @@ bool UManagableGameViewportClient::InputTouch(FViewport* Viewport, int32 Control
 	bool res = UGameViewportClient::InputTouch(Viewport, ControllerId, Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
 
 	FPointerEvent pevent;
+	FGeometry geom = GetGeometry();
 	switch (Type)
 	{
 	case ETouchType::Began:
 		pevent = GetPointerEvent(Handle, TouchLocation);
-		OnTouchBegin.Broadcast(pevent);
+		GlobalInputProcessors->OnTouchStarted(geom, pevent);
 		LastTouchLocations.Add(Handle, TouchLocation);
 		break;
 
 	case ETouchType::Moved:
 		pevent = GetPointerEventWithDelta(Handle, TouchLocation);
-		OnTouchMove.Broadcast(pevent);
-		LastTouchLocations[Handle] = TouchLocation;
-		break;
-
-	case ETouchType::Stationary:
-		pevent = GetPointerEventWithDelta(Handle, TouchLocation);
-		OnTouchStationary.Broadcast(pevent);
+		GlobalInputProcessors->OnTouchMoved(geom, pevent);
 		LastTouchLocations[Handle] = TouchLocation;
 		break;
 
 	case ETouchType::ForceChanged:
-		break;
-
-	case ETouchType::FirstMove:
-		pevent = GetPointerEventWithDelta(Handle, TouchLocation);
-		OnTouchFirstMove.Broadcast(pevent);
-		LastTouchLocations[Handle] = TouchLocation;
+		pevent = GetPointerEvent(Handle, TouchLocation);
+		GlobalInputProcessors->OnTouchForceChanged(geom, pevent);
 		break;
 
 	case ETouchType::Ended:
 		pevent = GetPointerEvent(Handle, TouchLocation);
-		OnTouchEnded.Broadcast(pevent);
+		GlobalInputProcessors->OnTouchEnded(geom, pevent);
 		LastTouchLocations.Remove(Handle);
 		break;
 
@@ -215,6 +209,16 @@ UManagableGameViewportClient* UManagableGameViewportClient::GetManagableViewport
 	return res;
 }
 
+void UManagableGameViewportClient::AddInputTargetWidget(UUserWidget* widget)
+{
+	GlobalInputProcessors->AddInputTargetWidget(widget);
+}
+
+void UManagableGameViewportClient::RemoveInputTargetWidget(UUserWidget* widget)
+{
+	GlobalInputProcessors->AddInputTargetWidget(widget);
+}
+
 void UManagableGameViewportClient::Tick(float DeltaTime)
 {
 	UGameViewportClient::Tick(DeltaTime);
@@ -265,8 +269,10 @@ void UManagableGameViewportClient::MouseMove(FViewport* Viewport, int32 X, int32
 	UGameViewportClient::MouseMove(Viewport, X, Y);
 	FVector2D currpos = FVector2D(X, Y);
 	if (FMath::IsNearlyZero(FVector2D::Distance(currpos, LastMouseLocation))) return;
+
 	FPointerEvent resEvent = GetMouseEventWithDelta(currpos);
-	OnMouseMove.Broadcast(resEvent);
+	GlobalInputProcessors->OnMouseMove(GetGeometry(), resEvent);
+
 	LastMouseLocation = currpos;
 }
 
@@ -275,4 +281,10 @@ void UManagableGameViewportClient::Activated(FViewport* InViewport, const FWindo
 	Super::Activated(InViewport, InActivateEvent);
 
 	SetSettings(Settings, true);
+}
+
+FGeometry UManagableGameViewportClient::GetGeometry()
+{
+	FVector2D vpsize; GetViewportSize(vpsize);
+	return FGeometry(FVector2D::ZeroVector, FVector2D::ZeroVector, vpsize, 1.0f);
 }

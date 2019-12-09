@@ -3,6 +3,8 @@
 #include "WidgetHostWindow.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "GlobalInputProcessor.h"
+
 // Sets default values for this component's properties
 UWidgetHostWindow::UWidgetHostWindow()
 {
@@ -29,6 +31,7 @@ void UWidgetHostWindow::BeginPlay()
 {
 	Super::BeginPlay();
 	UpdateDisplayMetrics();
+	GlobalInputProcessors = NewObject<UInputProcessorCollection>(this);
 }
 
 // Called every frame
@@ -49,6 +52,14 @@ void UWidgetHostWindow::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 		prevWindowSize = currsize;
 	}
 }
+
+#define SWINDOW_KEYEVENT_TUNNEL(name) \
+	sWindow->##name##Event.AddLambda([this](FGeometry geometry, FKeyEvent keyEvent) { \
+		GlobalInputProcessors->##name##(geometry, keyEvent); })
+
+#define SWINDOW_TOUCHEVENT_TUNNEL(name) \
+	sWindow->##name##Event.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent) { \
+		GlobalInputProcessors->##name##(geometry, pointerEvent); })
 
 void UWidgetHostWindow::OpenWindow(
 	TSubclassOf<class UUserWidget> content, APlayerController* owner, FBlueWindowSettings settings,
@@ -87,60 +98,16 @@ void UWidgetHostWindow::OpenWindow(
 		.PropagateKeys(true)
 		.PropagateTouchGestures(true);
 
-	sWindow->OnKeyDownEvent.AddLambda([this](FGeometry geometry, FKeyEvent keyEvent)
-	{
-		OnKeyDownEvent.Broadcast(geometry, keyEvent);
-	});
-
-	sWindow->OnKeyUpEvent.AddLambda([this](FGeometry geometry, FKeyEvent keyEvent)
-	{
-		OnKeyUpEvent.Broadcast(geometry, keyEvent);
-	});
-
-	sWindow->OnTouchGestureEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnTouchGestureEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnTouchStartedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnTouchStartedEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnTouchFirstMoveEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnTouchFirstMoveEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnTouchMovedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnTouchMovedEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnTouchForceChangedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnTouchForceChangedEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnTouchEndedEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnTouchEndedEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnMouseButtonDownEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnMouseButtonDownEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnMouseButtonUpEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnMouseButtonUpEvent.Broadcast(geometry, pointerEvent);
-	});
-
-	sWindow->OnMouseMoveEvent.AddLambda([this](FGeometry geometry, FPointerEvent pointerEvent)
-	{
-		OnMouseMoveEvent.Broadcast(geometry, pointerEvent);
-	});
+	SWINDOW_KEYEVENT_TUNNEL(OnKeyDown);
+	SWINDOW_KEYEVENT_TUNNEL(OnKeyUp);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchGesture);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchStarted);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchMoved);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchForceChanged);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchEnded);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnMouseButtonDown);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnMouseButtonUp);
+	SWINDOW_TOUCHEVENT_TUNNEL(OnMouseMove);
 
 	auto refWindow = sWindow.ToSharedRef();
 	FSlateApplication& slateApp = FSlateApplication::Get();
@@ -273,4 +240,13 @@ void UWidgetHostWindow::Close()
 	sWindow->RequestDestroyWindow();
 }
 
+void UWidgetHostWindow::AddInputTargetWidget(UUserWidget* widget)
+{
+	GlobalInputProcessors->AddInputTargetWidget(widget);
+}
+
+void UWidgetHostWindow::RemoveInputTargetWidget(UUserWidget* widget)
+{
+	GlobalInputProcessors->RemoveInputTargetWidget(widget);
+}
 
