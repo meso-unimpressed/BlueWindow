@@ -250,3 +250,34 @@ void UWidgetHostWindow::RemoveInputTargetWidget(UUserWidget* widget)
 	GlobalInputProcessors->RemoveInputTargetWidget(widget);
 }
 
+void UWidgetHostWindow::BeginDestroy()
+{
+	Super::BeginDestroy();
+	PreDestroy();
+
+}
+
+void UWidgetHostWindow::PreDestroy()
+{
+	if (sContent)
+	{
+		sContent.Reset();
+		Content->RemoveFromParent();
+		Content->Destruct();
+		Content->ConditionalBeginDestroy();
+		if (sBox) sBox.Reset();
+		if (sCanvas) sCanvas.Reset();
+		if (sWindow)
+		{
+			sWindow->RequestDestroyWindow();
+			sWindow.Reset();
+		}
+	}
+}
+
+void UWidgetHostWindow::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	PreDestroy();
+}
+

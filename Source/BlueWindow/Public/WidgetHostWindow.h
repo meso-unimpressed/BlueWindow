@@ -104,4 +104,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
 		void RemoveInputTargetWidget(UUserWidget* widget);
+
+	void BeginDestroy() override;
+
+	void PreDestroy();
+
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 };
