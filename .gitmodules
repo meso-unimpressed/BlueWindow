@@ -4,3 +4,6 @@
 [submodule "Plugins/MESOUSLCPP"]
 	path = Plugins/MESOUSLCPP
 	url = https://poly.meso.net/ue4/mesouslcpp.git
+[submodule "Plugins/BlueWindow"]
+	path = Plugins/BlueWindow
+	url = https://github.com/meso-unimpressed/BlueWindow.git
