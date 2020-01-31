@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "UserWidget.h"
+#include "Blueprint/UserWidget.h"
 
 #include "BlueWindowBPLibrary.generated.h"
 struct FHitResult;

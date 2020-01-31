@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Engine/LocalPlayer.h"
 #include "PointerRay.h"
-#include "Events.h"
-#include "UserWidget.h"
+#include "Input/Events.h"
+#include "Blueprint/UserWidget.h"
 
 #include "TraceEventPlayerController.generated.h"
 

@@ -140,7 +140,7 @@ bool ATraceEventPlayerController::TraceResultPredicate(FHitResult Hit)
 {
 	bool ignore = false;
 	if (Hit.Actor.IsValid())
-		ignore = Hit.Actor->bHidden || Hit.Actor->Tags.Contains(TEXT("TraceIgnore"));
+		ignore = Hit.Actor->IsHidden() || Hit.Actor->Tags.Contains(TEXT("TraceIgnore"));
 	if (!ignore && Hit.Component.IsValid())
 		ignore = Hit.Component->bHiddenInGame || Hit.Component->ComponentTags.Contains(TEXT("TraceIgnore"));
 	return !ignore;

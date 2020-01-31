@@ -3,7 +3,7 @@
 #include "BlueWindowBPLibrary.h"
 #include "BlueWindow.h"
 #include "CoreMinimal.h"
-#include "DrawElements.h"
+#include "Rendering/DrawElements.h"
 #include <limits>
 
 UBlueWindowBPLibrary::UBlueWindowBPLibrary(const FObjectInitializer& ObjectInitializer)

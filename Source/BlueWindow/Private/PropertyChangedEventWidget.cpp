@@ -2,7 +2,7 @@
 
 
 #include "PropertyChangedEventWidget.h"
-#include "UnrealType.h"
+#include "UObject/UnrealType.h"
 
 //void UPropertyChangedEventWidget::PostDuplicate(bool bDuplicateForPIE)
 //{

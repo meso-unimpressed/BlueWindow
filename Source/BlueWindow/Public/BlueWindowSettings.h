@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UserWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "UObject/Interface.h"
 #include "BlueWindowSettings.generated.h"
 
@@ -14,7 +14,8 @@ enum class EBlueWindowMode : uint8
 	Fullscreen = EWindowMode::Type::Fullscreen,
 	WindowedFullscreen = EWindowMode::Type::WindowedFullscreen,
 	Windowed = EWindowMode::Type::Windowed,
-	NumWindowModes = EWindowMode::Type::NumWindowModes
+	NumWindowModes = EWindowMode::Type::NumWindowModes,
+	None = 0
 };
 
 // This class does not need to be modified.
