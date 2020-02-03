@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
-#include "GenericApplication.h"
-#include "SlateApplication.h"
+#include "GenericPlatform/GenericApplication.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Widgets/Layout/SBox.h"
 #include "Engine/World.h"
 

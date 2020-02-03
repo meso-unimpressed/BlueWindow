@@ -6,10 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "Engine/EngineTypes.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "UserWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "Engine/SceneCapture.h"
-#include "Events.h"
-#include "Geometry.h"
+#include "Input/Events.h"
+#include "Layout/Geometry.h"
 #include "PointerRay.h"
 
 #include "InteractiveSceneCapture2D.generated.h"

@@ -2,7 +2,7 @@
 
 #include "GlobalInputProcessor.h"
 
-#include "UserWidget.h"
+#include "Blueprint/UserWidget.h"
 
 #define DECL_KEYEVENT(name) \
 	void UGlobalInputProcessor::##name##_Implementation(FGeometry geometry, FKeyEvent keyEvent) \

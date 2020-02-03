@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameViewportClient.h"
 #include "BlueWindowSettings.h"
-#include "Events.h"
+#include "Input/Events.h"
 
 #include "ManagableGameViewportClient.generated.h"
 
@@ -60,7 +60,7 @@ public:
 	virtual void Init(struct FWorldContext& WorldContext, UGameInstance* OwningGameInstance, bool bCreateNewAudioDevice = true) override;
 
 	virtual bool InputTouch (
-		FViewport* Viewport,
+		FViewport* TargetViewport,
 		int32 ControllerId,
 		uint32 Handle,
 		ETouchType::Type Type,
@@ -97,7 +97,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-	void MouseMove(FViewport* Viewport, int32 X, int32 Y) override;
+	void MouseMove(FViewport* InViewport, int32 X, int32 Y) override;
 
 	void Activated(FViewport* InViewport, const FWindowActivateEvent& InActivateEvent) override;
 

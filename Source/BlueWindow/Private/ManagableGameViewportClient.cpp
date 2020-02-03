@@ -5,9 +5,9 @@
 #include "Engine/Engine.h"
 #include "Engine/Texture2D.h"
 #include "Slate/SceneViewport.h"
-#include "SWindow.h"
+#include "Widgets/SWindow.h"
 #include "HardwareInfo.h"
-#include "UserWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "GlobalInputProcessor.h"
 
 //#if PLATFORM_WINDOWS && !defined(WINDOWS_PLATFORM_TYPES_GUARD)
@@ -88,9 +88,9 @@ void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGam
 	UpdateDisplayMetrics();
 }
 
-bool UManagableGameViewportClient::InputTouch(FViewport* Viewport, int32 ControllerId, uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
+bool UManagableGameViewportClient::InputTouch(FViewport* TargetViewport, int32 ControllerId, uint32 Handle, ETouchType::Type Type, const FVector2D& TouchLocation, float Force, FDateTime DeviceTimestamp, uint32 TouchpadIndex)
 {
-	bool res = UGameViewportClient::InputTouch(Viewport, ControllerId, Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
+	bool res = UGameViewportClient::InputTouch(TargetViewport, ControllerId, Handle, Type, TouchLocation, Force, DeviceTimestamp, TouchpadIndex);
 
 	FPointerEvent pevent;
 	FGeometry geom = GetGeometry();
@@ -274,9 +274,9 @@ void UManagableGameViewportClient::Tick(float DeltaTime)
 	});
 }
 
-void UManagableGameViewportClient::MouseMove(FViewport* Viewport, int32 X, int32 Y)
+void UManagableGameViewportClient::MouseMove(FViewport* InViewport, int32 X, int32 Y)
 {
-	UGameViewportClient::MouseMove(Viewport, X, Y);
+	UGameViewportClient::MouseMove(InViewport, X, Y);
 	FVector2D currpos = FVector2D(X, Y);
 	if (FMath::IsNearlyZero(FVector2D::Distance(currpos, LastMouseLocation))) return;
 
