@@ -53,7 +53,7 @@ public class BlueWindow : ModuleRules
                 //"CoreUObject",
                 //"Engine",
                 //"InputCore",
-                //"RHI",
+                "RHI",
                 "Slate",
                 "SlateCore",
                 "RenderCore",
