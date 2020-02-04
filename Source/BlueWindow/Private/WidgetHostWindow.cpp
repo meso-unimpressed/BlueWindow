@@ -34,6 +34,23 @@ void UWidgetHostWindow::BeginPlay()
 	GlobalInputProcessors = NewObject<UInputProcessorCollection>(this);
 }
 
+FPointerEvent UWidgetHostWindow::ConvertFromExternalPointer(const FGeometry& geom, const FPointerEvent& e)
+{
+	FVector2D inputCoords = geom.AbsoluteToLocal(e.GetScreenSpacePosition());
+	FVector2D contentSize = sContent->GetCachedGeometry().GetLocalSize();
+	FVector2D outCoords = (inputCoords / geom.GetLocalSize()) * contentSize;
+	FVector2D pinputCoords = geom.AbsoluteToLocal(e.GetLastScreenSpacePosition());
+	FVector2D poutCoords = (pinputCoords / geom.GetLocalSize()) * contentSize;
+	return FPointerEvent(
+		e.GetPointerIndex(),
+		outCoords,
+		poutCoords,
+		outCoords - poutCoords,
+		FTouchKeySet::EmptySet,
+		ModifierKeysDummy
+	);
+}
+
 // Called every frame
 void UWidgetHostWindow::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -279,5 +296,41 @@ void UWidgetHostWindow::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 	PreDestroy();
+}
+
+void UWidgetHostWindow::SimulateTouchEnded(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent)
+{
+	FSlateApplication& slateApp = FSlateApplication::Get();
+	FPointerEvent e = ConvertFromExternalPointer(MyGeometry, InTouchEvent);
+	slateApp.OnTouchEnded(
+		e.GetScreenSpacePosition(),
+		InTouchEvent.GetPointerIndex(),
+		0
+	);
+}
+
+void UWidgetHostWindow::SimulateTouchMoved(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent)
+{
+	FSlateApplication& slateApp = FSlateApplication::Get();
+	FPointerEvent e = ConvertFromExternalPointer(MyGeometry, InTouchEvent);
+	slateApp.OnTouchMoved(
+		e.GetScreenSpacePosition(),
+		InTouchEvent.GetTouchForce(),
+		InTouchEvent.GetPointerIndex(),
+		0
+	);
+}
+
+void UWidgetHostWindow::SimulateTouchStarted(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent)
+{
+	FSlateApplication& slateApp = FSlateApplication::Get();
+	FPointerEvent e = ConvertFromExternalPointer(MyGeometry, InTouchEvent);
+	slateApp.OnTouchStarted(
+		sWindow->GetNativeWindow(),
+		e.GetScreenSpacePosition(),
+		InTouchEvent.GetTouchForce(),
+		InTouchEvent.GetPointerIndex(),
+		0
+	);
 }
 
