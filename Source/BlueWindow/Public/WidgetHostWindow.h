@@ -27,9 +27,14 @@ class BLUEWINDOW_API UWidgetHostWindow : public UActorComponent
 {
 	GENERATED_BODY()
 
+private:
+	FModifierKeysState ModifierKeysDummy;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	FPointerEvent ConvertFromExternalPointer(const FGeometry& geom, const FPointerEvent& e);
 
 	TSharedPtr<SInputPropagatingWindow> sWindow;
 	TSharedPtr<SWidget> sContent;
@@ -111,4 +116,12 @@ public:
 
 	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void SimulateTouchEnded(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent);
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void SimulateTouchMoved(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent);
+
+	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
+		void SimulateTouchStarted(const FGeometry& MyGeometry, const FPointerEvent& InTouchEvent);
 };
