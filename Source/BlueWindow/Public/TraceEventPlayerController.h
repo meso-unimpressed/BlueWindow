@@ -29,6 +29,9 @@ private:
 	TSet<FKey> PressedButtonsDummy;
 	FModifierKeysState ModifierKeysDummy;
 
+	FVector2D VpSize;
+	FVector2D LastVpTouchLocation;
+
 protected:
 
 	FVector2D NormalizeScreenCoords(FPointerEvent Pointer);
