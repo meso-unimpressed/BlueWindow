@@ -236,7 +236,19 @@ void ATraceEventPlayerController::BeginPointer(UWidget* SourceWidget, FGeometry 
 	int srcid = (int)SourceWidget->GetUniqueID();
 	ETouchIndex::Type FingerIndex = (ETouchIndex::Type)((char)pointerEvent.GetPointerIndex());
 	FVector2D localCoords = geometry.AbsoluteToLocal(pointerEvent.GetScreenSpacePosition());
-	FVector2D normCoords = (localCoords / geometry.GetLocalSize() - 0.5) * FVector2D(2, -2);
+
+	FVector2D oneCoords = localCoords / geometry.GetLocalSize();
+	FVector2D normCoords = (oneCoords - 0.5) * FVector2D(2, -2);
+	GEngine->GameViewport->GetViewportSize(VpSize);
+	LastVpTouchLocation = oneCoords * VpSize;
+
+	APlayerController::InputTouch(
+		FingerIndex,
+		ETouchType::Began,
+		LastVpTouchLocation,
+		pointerEvent.GetTouchForce(),
+		FDateTime::UtcNow(), 0
+	);
 
 	BeginPointer(srcid, FingerIndex, normCoords, pointerEvent, false);
 }
@@ -266,7 +278,19 @@ void ATraceEventPlayerController::MovePointer(UWidget* SourceWidget, FGeometry g
 	int srcid = (int)SourceWidget->GetUniqueID();
 	ETouchIndex::Type FingerIndex = (ETouchIndex::Type)((char)pointerEvent.GetPointerIndex());
 	FVector2D localCoords = geometry.AbsoluteToLocal(pointerEvent.GetScreenSpacePosition());
-	FVector2D normCoords = (localCoords / geometry.GetLocalSize() - 0.5) * FVector2D(2, -2);
+
+	FVector2D oneCoords = localCoords / geometry.GetLocalSize();
+	FVector2D normCoords = (oneCoords - 0.5) * FVector2D(2, -2);
+	GEngine->GameViewport->GetViewportSize(VpSize);
+	LastVpTouchLocation = oneCoords * VpSize;
+
+	APlayerController::InputTouch(
+		FingerIndex,
+		ETouchType::Moved,
+		LastVpTouchLocation,
+		pointerEvent.GetTouchForce(),
+		FDateTime::UtcNow(), 0
+	);
 
 	MovePointer(srcid, FingerIndex, normCoords, pointerEvent, false);
 }
@@ -298,6 +322,14 @@ void ATraceEventPlayerController::EndPointer(UWidget* SourceWidget, FPointerEven
 {
 	int srcid = (int)SourceWidget->GetUniqueID();
 	ETouchIndex::Type FingerIndex = (ETouchIndex::Type)((char)pointerEvent.GetPointerIndex());
+
+	APlayerController::InputTouch(
+		FingerIndex,
+		ETouchType::Ended,
+		LastVpTouchLocation,
+		pointerEvent.GetTouchForce(),
+		FDateTime::UtcNow(), 0
+	);
 
 	EndPointer(srcid, FingerIndex, false);
 }

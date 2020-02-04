@@ -6,8 +6,7 @@
 #include "Rendering/DrawElements.h"
 #include <limits>
 
-UBlueWindowBPLibrary::UBlueWindowBPLibrary(const FObjectInitializer& ObjectInitializer)
-: Super(ObjectInitializer)
+UBlueWindowBPLibrary::UBlueWindowBPLibrary(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 
 }
