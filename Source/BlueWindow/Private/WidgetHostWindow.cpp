@@ -303,7 +303,7 @@ void UWidgetHostWindow::SimulateTouchEnded(const FGeometry& MyGeometry, const FP
 	FSlateApplication& slateApp = FSlateApplication::Get();
 	FPointerEvent e = ConvertFromExternalPointer(MyGeometry, InTouchEvent);
 	slateApp.OnTouchEnded(
-		e.GetScreenSpacePosition(),
+		e.GetScreenSpacePosition() + sWindow->GetPositionInScreen(),
 		InTouchEvent.GetPointerIndex(),
 		0
 	);
@@ -314,7 +314,7 @@ void UWidgetHostWindow::SimulateTouchMoved(const FGeometry& MyGeometry, const FP
 	FSlateApplication& slateApp = FSlateApplication::Get();
 	FPointerEvent e = ConvertFromExternalPointer(MyGeometry, InTouchEvent);
 	slateApp.OnTouchMoved(
-		e.GetScreenSpacePosition(),
+		e.GetScreenSpacePosition() + sWindow->GetPositionInScreen(),
 		InTouchEvent.GetTouchForce(),
 		InTouchEvent.GetPointerIndex(),
 		0
@@ -327,7 +327,7 @@ void UWidgetHostWindow::SimulateTouchStarted(const FGeometry& MyGeometry, const 
 	FPointerEvent e = ConvertFromExternalPointer(MyGeometry, InTouchEvent);
 	slateApp.OnTouchStarted(
 		sWindow->GetNativeWindow(),
-		e.GetScreenSpacePosition(),
+		e.GetScreenSpacePosition() + sWindow->GetPositionInScreen(),
 		InTouchEvent.GetTouchForce(),
 		InTouchEvent.GetPointerIndex(),
 		0
