@@ -48,11 +48,6 @@ public class BlueWindow : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
             {
-                //"ApplicationCore",
-                //"Core",
-                //"CoreUObject",
-                //"Engine",
-                //"InputCore",
                 "RHI",
                 "Slate",
                 "SlateCore",
@@ -60,6 +55,8 @@ public class BlueWindow : ModuleRules
                 "UMG",
             }
 		);
+
+        PrivateDependencyModuleNames.Add("UnrealEd");
 
         if (Target.Type != TargetType.Server)
         {
