@@ -35,6 +35,10 @@
 //}
 
 #if WITH_EDITOR
+
+#include "Editor.h"
+#include "Misc/App.h"
+
 void UPropertyChangedEventWidget::PostEditUndo()
 {
 	Super::PostEditUndo();
@@ -58,6 +62,54 @@ void UPropertyChangedEventWidget::OnDesignerChanged(const FDesignerChangedEventA
 	Super::OnDesignerChanged(EventArgs);
 	NotifyOnAnyPropertyChanged();
 }
+
+FTimerDelegate UPropertyChangedEventWidget::OnTickDel;
+TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> UPropertyChangedEventWidget::AllPropChangedWidgets;
+
+bool UPropertyChangedEventWidget::Initialize()
+{
+	Super::Initialize();
+	if (!GEditor) return true;
+
+	if (!OnTickDel.IsBound())
+	{
+		OnTickDel = OnTickDel.CreateLambda([this]()
+		{
+			OnEditorTickTrigger(FApp::GetDeltaTime());
+		});
+
+		GEditor->GetTimerManager().Get().SetTimerForNextTick(OnTickDel);
+	}
+
+	AllPropChangedWidgets.Add(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
+
+	return true;
+}
+
+void UPropertyChangedEventWidget::OnEditorTickTrigger(float DeltaTime)
+{
+	for(auto widget : AllPropChangedWidgets)
+	{
+		if (widget.IsValid())
+		{
+			UWorld* const World = GEngine->GetWorldFromContextObject(widget.Get(), EGetWorldErrorMode::ReturnNull);
+			if(World)
+			{
+				if (World->WorldType != EWorldType::PIE)
+					widget->NotifyOnEditorTick(DeltaTime);
+			}
+			else widget->NotifyOnEditorTick(DeltaTime);
+		}
+	}
+	GEditor->GetTimerManager().Get().SetTimerForNextTick(OnTickDel);
+}
+
+void UPropertyChangedEventWidget::BeginDestroy()
+{
+	Super::BeginDestroy();
+	AllPropChangedWidgets.Remove(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
+}
+
 #endif
 
 void UPropertyChangedEventWidget::SynchronizeProperties()
@@ -70,4 +122,10 @@ void UPropertyChangedEventWidget::NotifyOnAnyPropertyChanged()
 {
 	OnAnyPropertyChanged.Broadcast();
 	ReceiveOnAnyPropertyChanged();
+}
+
+void UPropertyChangedEventWidget::NotifyOnEditorTick(float DeltaTime)
+{
+	OnEditorTick.Broadcast(DeltaTime);
+	ReceiveOnEditorTick(DeltaTime);
 }

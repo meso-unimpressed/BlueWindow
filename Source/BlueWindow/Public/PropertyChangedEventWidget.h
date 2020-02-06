@@ -8,6 +8,7 @@
 #include "PropertyChangedEventWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAnyPropertyChangedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEditorTickDelegate, float, DeltaTime);
 
 /**
  * 
@@ -30,6 +31,13 @@ public:
 	virtual void PostInterpChange(UProperty* PropertyThatChanged) override;
 
 	virtual void OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs) override;
+
+	static FTimerDelegate OnTickDel;
+	static void OnEditorTickTrigger(float DeltaTime);
+	static TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> AllPropChangedWidgets;
+	bool Initialize() override;
+
+	void BeginDestroy() override;
 #endif
 
 	virtual void SynchronizeProperties() override;
@@ -41,4 +49,14 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "AnyPropertyChanged"), Category = "BlueWindow")
 		void ReceiveOnAnyPropertyChanged();
+
+
+	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
+		FEditorTickDelegate OnEditorTick;
+
+	void NotifyOnEditorTick(float DeltaTime);
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EditorTick"), Category = "BlueWindow")
+		void ReceiveOnEditorTick(float DeltaTime);
+
 };
