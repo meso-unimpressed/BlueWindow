@@ -56,7 +56,8 @@ public class BlueWindow : ModuleRules
             }
 		);
 
-        PrivateDependencyModuleNames.Add("UnrealEd");
+        if(Target.Type == TargetType.Editor)
+            PrivateDependencyModuleNames.Add("UnrealEd");
 
         if (Target.Type != TargetType.Server)
         {
