@@ -231,6 +231,8 @@ void UManagableGameViewportClient::Tick(float DeltaTime)
 
 	ENQUEUE_RENDER_COMMAND(void)([this, vps](FRHICommandListImmediate& RHICmdList)
 	{
+		if (!Viewport) return;
+
 		auto RhiVpTex = Viewport->GetRenderTargetTexture();
 		auto RhiVp = Viewport->GetViewportRHI();
 
