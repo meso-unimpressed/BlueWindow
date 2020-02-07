@@ -65,6 +65,7 @@ void UPropertyChangedEventWidget::OnDesignerChanged(const FDesignerChangedEventA
 
 FTimerDelegate UPropertyChangedEventWidget::OnTickDel;
 TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> UPropertyChangedEventWidget::AllPropChangedWidgets;
+TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> UPropertyChangedEventWidget::RemovablePropChangedWidgets;
 
 bool UPropertyChangedEventWidget::Initialize()
 {
@@ -88,6 +89,8 @@ bool UPropertyChangedEventWidget::Initialize()
 
 void UPropertyChangedEventWidget::OnEditorTickTrigger(float DeltaTime)
 {
+	RemovablePropChangedWidgets.Empty();
+
 	for(auto widget : AllPropChangedWidgets)
 	{
 		if (widget.IsValid())
@@ -100,7 +103,18 @@ void UPropertyChangedEventWidget::OnEditorTickTrigger(float DeltaTime)
 			}
 			else widget->NotifyOnEditorTick(DeltaTime);
 		}
+		else
+		{
+			RemovablePropChangedWidgets.Add(widget);
+			UE_LOG(LogTemp, Display, TEXT("a PropertyChangedEvent widget was Removed"));
+		}
 	}
+
+	for(auto widget : RemovablePropChangedWidgets)
+	{
+		AllPropChangedWidgets.Remove(widget);
+	}
+
 	GEditor->GetTimerManager().Get().SetTimerForNextTick(OnTickDel);
 }
 

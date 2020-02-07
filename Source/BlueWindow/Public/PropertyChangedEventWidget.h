@@ -35,6 +35,7 @@ public:
 	static FTimerDelegate OnTickDel;
 	static void OnEditorTickTrigger(float DeltaTime);
 	static TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> AllPropChangedWidgets;
+	static TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> RemovablePropChangedWidgets;
 	bool Initialize() override;
 
 	void BeginDestroy() override;
