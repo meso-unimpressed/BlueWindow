@@ -51,7 +51,7 @@ void UPropertyChangedEventWidget::PostEditUndo(TSharedPtr<ITransactionObjectAnno
 	NotifyOnAnyPropertyChanged();
 }
 
-void UPropertyChangedEventWidget::PostInterpChange(UProperty* PropertyThatChanged)
+void UPropertyChangedEventWidget::PostInterpChange(FProperty* PropertyThatChanged)
 {
 	Super::PostInterpChange(PropertyThatChanged);
 	NotifyOnAnyPropertyChanged();

@@ -13,6 +13,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FViewportTouchEventDelegate, FPointerEvent, Pointer);
 
 class UGlobalInputProcessor;
+class UInputProcessorCollection;
 
 /**
  * 

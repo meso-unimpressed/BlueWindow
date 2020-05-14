@@ -28,7 +28,7 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditUndo() override;
 	virtual void PostEditUndo(TSharedPtr<ITransactionObjectAnnotation> TransactionAnnotation) override;
-	virtual void PostInterpChange(UProperty* PropertyThatChanged) override;
+	virtual void PostInterpChange(FProperty* PropertyThatChanged) override;
 
 	virtual void OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs) override;
 
