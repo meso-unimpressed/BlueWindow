@@ -42,6 +42,12 @@ public:
 	bool RenderOnPhase;
 
 	/**
+	 * Render the material during design time
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = RenderRules)
+		bool PreviewInDesignTime = true;
+
+	/**
 	 * The Phase this widget will draw on.
 	 *
 	 * If the Phase is 0, and the PhaseCount is 1, the widget will be drawn fresh every frame.
@@ -98,6 +104,7 @@ public:
 
 #if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
 	FGeometry GetCachedAllottedGeometry() const;
@@ -129,6 +136,7 @@ protected:
 	// UWidget interface
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void SynchronizeProperties() override;
+
 	// End of UWidget interface
 
 protected:

@@ -1,6 +1,6 @@
 
 
-#include "Components/RetainerBox.h"
+#include "InteractiveRetainerBox.h"
 #include "Widgets/SNullWidget.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 
@@ -96,7 +96,7 @@ TSharedRef<SWidget> UInteractiveRetainerBox::RebuildWidget()
 #endif//STATS
 		;
 
-	MyRetainerWidget->SetRetainedRendering(IsDesignTime() ? false : true);
+	MyRetainerWidget->SetRetainedRendering(PreviewInDesignTime);
 	
 	if ( GetChildrenCount() > 0 )
 	{
@@ -113,6 +113,7 @@ void UInteractiveRetainerBox::SynchronizeProperties()
 	MyRetainerWidget->SetEffectMaterial(EffectMaterial);
 	MyRetainerWidget->SetTextureParameter(TextureParameter);
 	MyRetainerWidget->SetWorld(GetWorld());
+	MyRetainerWidget->SetRetainedRendering(PreviewInDesignTime);
 }
 
 void UInteractiveRetainerBox::OnSlotAdded(UPanelSlot* InSlot)
@@ -138,6 +139,12 @@ void UInteractiveRetainerBox::OnSlotRemoved(UPanelSlot* InSlot)
 const FText UInteractiveRetainerBox::GetPaletteCategory()
 {
 	return LOCTEXT("Optimization", "Optimization");
+}
+
+void UInteractiveRetainerBox::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	RebuildWidget();
+    InvalidateLayoutAndVolatility();
 }
 
 #endif
