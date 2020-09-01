@@ -181,7 +181,7 @@ void UManagableGameViewportClient::SetSettings(FBlueWindowSettings settings, boo
 	if (!sWindow) return;
 
 	FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
-	auto monwa = targetMonitor.WorkArea;
+	auto monwa = targetMonitor.DisplayRect;
 
 	if (settings.WindowMode == EBlueWindowMode::Fullscreen ||
 		settings.WindowMode == EBlueWindowMode::WindowedFullscreen)
