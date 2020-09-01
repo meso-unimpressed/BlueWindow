@@ -10,6 +10,8 @@
 #include "Components/PrimitiveComponent.h"
 #include "BlueWindowBPLibrary.h"
 
+#include <algorithm>
+
 void ATraceEventPlayerController::CastPointerRay(FPointerRay& ray, FVector2D NormalizedCoords, bool begin, bool fromLocalPlayer)
 {
 
@@ -142,7 +144,22 @@ bool ATraceEventPlayerController::TraceResultPredicate(FHitResult Hit)
 	if (Hit.Actor.IsValid())
 		ignore = Hit.Actor->IsHidden() || Hit.Actor->Tags.Contains(TEXT("TraceIgnore"));
 	if (!ignore && Hit.Component.IsValid())
-		ignore = Hit.Component->bHiddenInGame || Hit.Component->ComponentTags.Contains(TEXT("TraceIgnore"));
+		ignore = Hit.Component->ComponentTags.Contains(TEXT("TraceIgnore"));
+	
+#if 0 // enable only if the above alone causes trouble
+	if(!ignore)
+	{
+		const auto& components = Hit.Actor->GetComponents();
+
+		ignore = std::all_of(components.begin(), components.end(), [](UActorComponent* comp)
+        {
+            auto primComp = Cast<UPrimitiveComponent>(comp);
+            if(primComp)
+            	return static_cast<bool>(primComp->bHiddenInGame);
+            return true;
+        });
+	}
+#endif
 	return !ignore;
 }
 
