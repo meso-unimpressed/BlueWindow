@@ -101,6 +101,7 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 	 * will return no hits and a false. If you want to avoid that set your objects
 	 * to Overlap collision. Might be fixed in the future.
 	 */
+	UFUNCTION(BlueprintCallable, Category = "Trace")
 	static bool LineTraceFiltered(
 		UWorld* World,
 		FVector Start,

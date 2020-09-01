@@ -121,7 +121,10 @@ void UPropertyChangedEventWidget::OnEditorTickTrigger(float DeltaTime)
 void UPropertyChangedEventWidget::BeginDestroy()
 {
 	Super::BeginDestroy();
-	AllPropChangedWidgets.Remove(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
+	if (this->GetPathName() != "None.None")
+	{
+		AllPropChangedWidgets.Remove(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
+	}
 }
 
 #endif

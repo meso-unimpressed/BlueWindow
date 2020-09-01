@@ -1,0 +1,28 @@
+float2 C0;
+float2 C1;
+float2 C2;
+float2 C3;
+
+float2 main(float2 uv : TEXCOORD0) : SV_Target0
+{
+	float T = (C2.x - C1.x) * (C2.y - C3.y) - (C2.x - C3.x) * (C2.y - C1.y);
+
+	float G = ((C2.x - C0.x) * (C2.y - C3.y) - (C2.x - C3.x) * (C2.y - C0.y)) / T;
+	float H = ((C2.x - C1.x) * (C2.y - C0.y) - (C2.x - C0.x) * (C2.y - C1.y)) / T;
+
+
+	float A = G * (C1.x - C0.x);
+	float D = G * (C1.y - C0.y);
+	float B = H * (C3.x - C0.x);
+	float E = H * (C3.y - C0.y);
+
+	G -= 1;
+	H -= 1;
+
+	float TT = G * uv.x + H * uv.y + 1;
+	float2 ruv = float2(
+		(A * uv.x + B * uv.y) / TT + C0.x,
+		(D * uv.x + E * uv.y) / TT + C0.y
+	);
+    return ruv;
+}
