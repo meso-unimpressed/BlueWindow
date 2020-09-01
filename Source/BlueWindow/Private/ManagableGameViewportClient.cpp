@@ -176,28 +176,36 @@ void UManagableGameViewportClient::SetSettings(FBlueWindowSettings settings, boo
 #endif
 
 	auto sWindow = GetWindow();
-	if (!sWindow.IsValid()) return;
 
-	if (Settings.TargetMonitor != settings.TargetMonitor ||
-		Settings.TopLeftOffset != settings.TopLeftOffset ||
-		force)
+	if (!Viewport) return;
+	if (!sWindow) return;
+
+	FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
+	auto monwa = targetMonitor.WorkArea;
+
+	if (settings.WindowMode == EBlueWindowMode::Fullscreen ||
+		settings.WindowMode == EBlueWindowMode::WindowedFullscreen)
 	{
-		FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
-		FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
+		Viewport->MoveWindow(
+			monwa.Left, monwa.Top,
+			monwa.Right - monwa.Left, monwa.Bottom - monwa.Top
+		);
+		sWindow->MoveWindowTo(FVector2D(monwa.Left, monwa.Top));
+		sWindow->Resize(FVector2D(monwa.Right - monwa.Left, monwa.Bottom - monwa.Top));
+		sWindow->SetWindowMode(EWindowMode::WindowedFullscreen);
+	}
+	else
+	{
+		FVector2D offset = FVector2D(monwa.Left, monwa.Top) + settings.TopLeftOffset;
+		Viewport->MoveWindow(
+			offset.X, offset.Y,
+			settings.Size.X, settings.Size.Y
+		);
 		sWindow->MoveWindowTo(offset);
-	}
-
-	if (Settings.Size != settings.Size || force)
-	{
 		sWindow->Resize(settings.Size);
-		ViewportFrame->ResizeFrame(settings.Size.X, settings.Size.Y, (EWindowMode::Type)settings.WindowMode);
 	}
 
-	if (Settings.WindowMode != settings.WindowMode || force)
-	{
-		sWindow->SetWindowMode((EWindowMode::Type)settings.WindowMode);
-		ViewportFrame->ResizeFrame(settings.Size.X, settings.Size.Y, (EWindowMode::Type)settings.WindowMode);
-	}
+	//ViewportFrame->ResizeFrame(settings.Size.X, settings.Size.Y, (EWindowMode::Type)settings.WindowMode);
 
 	Settings = settings;
 }
