@@ -6,12 +6,55 @@
 
 #include "PointerRay.generated.h"
 
+class ITraceEventSourceBase;
+
+USTRUCT(BlueprintType)
+struct BLUEWINDOW_API FPointerRayOptions
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
+	ITraceEventSourceBase* RaySource;
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
+	float RayLength;
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
+	bool bFromLocalPlayer;
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
+	bool bIsMouse;
+
+	FPointerRayOptions()
+	    : RaySource(nullptr),
+		  RayLength(250000),
+		  bFromLocalPlayer(false)
+	{
+	}
+
+    FPointerRayOptions(ITraceEventSourceBase* RaySource, float RayLength, bool bFromLocalPlayer)
+        : RaySource(RaySource),
+          RayLength(RayLength),
+          bFromLocalPlayer(bFromLocalPlayer),
+		  bIsMouse(false)
+    {
+    }
+
+	FPointerRayOptions(ITraceEventSourceBase* RaySource, float RayLength, bool bFromLocalPlayer, bool bIsMouse)
+		: RaySource(RaySource),
+		RayLength(RayLength),
+		bFromLocalPlayer(bFromLocalPlayer),
+		bIsMouse(bIsMouse)
+	{
+	}
+};
+
 USTRUCT(BlueprintType)
 struct BLUEWINDOW_API FPointerRay
 {
 	GENERATED_BODY()
 
-		UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
 		TEnumAsByte<ETouchIndex::Type> FingerIndex;
 
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
@@ -43,6 +86,9 @@ struct BLUEWINDOW_API FPointerRay
 
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
 		float AgeInSeconds = 0.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
+	    FPointerRayOptions Options;
 
 	void Age(float delta);
 };
