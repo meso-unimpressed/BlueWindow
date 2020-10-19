@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
 
 #include "PropertyChangedEventWidget.generated.h"
@@ -26,13 +27,13 @@ public:
 	//virtual void PostInitProperties() override;
 
 #if WITH_EDITOR
+	static FTimerDelegate OnTickDel;
+
 	virtual void PostEditUndo() override;
 	virtual void PostEditUndo(TSharedPtr<ITransactionObjectAnnotation> TransactionAnnotation) override;
 	virtual void PostInterpChange(FProperty* PropertyThatChanged) override;
 
 	virtual void OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs) override;
-
-	static FTimerDelegate OnTickDel;
 	static void OnEditorTickTrigger(float DeltaTime);
 	static TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> AllPropChangedWidgets;
 	static TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> RemovablePropChangedWidgets;
