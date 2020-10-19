@@ -14,7 +14,7 @@ struct BLUEWINDOW_API FPointerRayOptions
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
-	ITraceEventSourceBase* RaySource;
+	TScriptInterface<ITraceEventSourceBase> RaySource;
 
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
 	float RayLength;
@@ -26,25 +26,26 @@ struct BLUEWINDOW_API FPointerRayOptions
 	bool bIsMouse;
 
 	FPointerRayOptions()
-	    : RaySource(nullptr),
-		  RayLength(250000),
-		  bFromLocalPlayer(false)
+	    : RaySource(nullptr)
+		, RayLength(250000)
+		, bFromLocalPlayer(false)
+		, bIsMouse(false)
 	{
 	}
 
-    FPointerRayOptions(ITraceEventSourceBase* RaySource, float RayLength, bool bFromLocalPlayer)
-        : RaySource(RaySource),
-          RayLength(RayLength),
-          bFromLocalPlayer(bFromLocalPlayer),
-		  bIsMouse(false)
-    {
-    }
+    FPointerRayOptions(const TScriptInterface<ITraceEventSourceBase>& RaySource, float RayLength, bool bFromLocalPlayer)
+		: RaySource(RaySource)
+		, RayLength(RayLength)
+		, bFromLocalPlayer(bFromLocalPlayer)
+		, bIsMouse(false)
+	{
+	}
 
-	FPointerRayOptions(ITraceEventSourceBase* RaySource, float RayLength, bool bFromLocalPlayer, bool bIsMouse)
-		: RaySource(RaySource),
-		RayLength(RayLength),
-		bFromLocalPlayer(bFromLocalPlayer),
-		bIsMouse(bIsMouse)
+	FPointerRayOptions(const TScriptInterface<ITraceEventSourceBase>& RaySource, float RayLength, bool bFromLocalPlayer, bool bIsMouse)
+		: RaySource(RaySource)
+		, RayLength(RayLength)
+		, bFromLocalPlayer(bFromLocalPlayer)
+		, bIsMouse(bIsMouse)
 	{
 	}
 };
