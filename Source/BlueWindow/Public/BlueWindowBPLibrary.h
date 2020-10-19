@@ -9,6 +9,7 @@
 struct FHitResult;
 
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FTraceResultFilterDelegate, FHitResult, Hit);
+DECLARE_DELEGATE_RetVal_OneParam(bool, FTraceResultFilterStaticDel, FHitResult);
 
 /* 
 *	Function library class.
@@ -107,6 +108,14 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 		FVector Start,
 		FVector End,
 		FTraceResultFilterDelegate Filter,
+		TArray<FHitResult>& OutHits,
+		FHitResult& FirstHit
+	);
+	static bool LineTraceFiltered(
+		UWorld* World,
+		FVector Start,
+		FVector End,
+		FTraceResultFilterStaticDel Filter,
 		TArray<FHitResult>& OutHits,
 		FHitResult& FirstHit
 	);

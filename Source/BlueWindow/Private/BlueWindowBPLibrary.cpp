@@ -107,7 +107,8 @@ void UBlueWindowBPLibrary::DrawSplineDrawSpace(
 		Tint);
 }
 
-bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVector End, FTraceResultFilterDelegate Filter, TArray<FHitResult>& OutHits, FHitResult& FirstHit)
+template <typename TFilterDel>
+bool LineTraceFiltered_Internal(UWorld* World, FVector Start, FVector End, TFilterDel Filter, TArray<FHitResult>& OutHits, FHitResult& FirstHit)
 {
 	OutHits = TArray<FHitResult>();
 	TArray<FHitResult> tempHits;
@@ -127,19 +128,29 @@ bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVect
 		FCollisionObjectQueryParams::DefaultObjectQueryParam,
 		CollisionParams);
 
-	for(FHitResult hit : tempHits)
+	for (FHitResult hit : tempHits)
 	{
-		if(hit.Distance <= 0) continue;
+		if (hit.Distance <= 0) continue;
 		if (!Filter.Execute(hit)) continue;
 
 		OutHits.Add(hit);
-		if(hit.Distance < mindist)
+		if (hit.Distance < mindist)
 		{
 			mindist = hit.Distance;
 			FirstHit = hit;
 		}
 	}
 	return OutHits.Num() > 0;
+}
+
+bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVector End, FTraceResultFilterDelegate Filter, TArray<FHitResult>& OutHits, FHitResult& FirstHit)
+{
+	return LineTraceFiltered_Internal(World, Start, End, Filter, OutHits, FirstHit);
+}
+
+bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVector End, FTraceResultFilterStaticDel Filter, TArray<FHitResult>& OutHits, FHitResult& FirstHit)
+{
+	return LineTraceFiltered_Internal(World, Start, End, Filter, OutHits, FirstHit);
 }
 
 void UBlueWindowBPLibrary::DrawLinesThick(
@@ -161,4 +172,3 @@ void UBlueWindowBPLibrary::DrawLinesThick(
 		bAntiAlias,
 		Thickness);
 }
-
