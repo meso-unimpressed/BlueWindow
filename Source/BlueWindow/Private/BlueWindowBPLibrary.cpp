@@ -116,7 +116,7 @@ bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVect
 	//CollisionParams.AddIgnoredActors(ActorsToIgnore);
 	CollisionParams.bReturnFaceIndex = false;
 	CollisionParams.bReturnPhysicalMaterial = false;
-	CollisionParams.bTraceComplex = false;
+	CollisionParams.bTraceComplex = true;
 
 	FirstHit = FHitResult();
 
