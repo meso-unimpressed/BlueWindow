@@ -5,10 +5,12 @@ using UnrealBuildTool;
 public class BlueWindow : ModuleRules
 {
 	public BlueWindow(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
+    {
+        PCHUsage = ModuleRules.PCHUsageMode.NoPCHs;
+        CppStandard = CppStandardVersion.Cpp17;
+        bEnableUndefinedIdentifierWarnings = false;
+
+        PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
 			}
