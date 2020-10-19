@@ -1,13 +1,13 @@
-// Developed by MESO Digital Interiors GmbH. for HERE Technologies Inc. Confidential content only accessible to MESO Digital Interiors GmbH. employees
+// Developed by MESO Digital Interiors GmbH. All rights reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Engine/EngineTypes.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "TraceEventSourceBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/SceneCapture.h"
+#include "SceneView.h"
 #include "Input/Events.h"
 #include "Layout/Geometry.h"
 #include "PointerRay.h"
@@ -15,18 +15,16 @@
 #include "InteractiveSceneCapture2D.generated.h"
 
 UCLASS()
-class BLUEWINDOW_API AInteractiveSceneCapture2D : public ASceneCapture
+class BLUEWINDOW_API AInteractiveSceneCapture2D
+    : public ASceneCapture
+	, public ITraceEventSourceBase
 {
 	GENERATED_UCLASS_BODY()
 
 private:
 	void ComputeViewInfo();
-
-	void CastPointerRay(FPointerRay& ray, FVector2D NormalizedCoords, bool begin);
 	
-public:	
-
-	void ComputeRayForViewProjection(FMatrix ViewProj, FVector2D NormalizedCoords, FVector& Start, FVector& End);
+public:
 
 	/**
 	 * Deproject a screen coordinate to a world position with start and end points.
@@ -46,12 +44,14 @@ public:
 	UPROPERTY(Category = DecalActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class USceneCaptureComponent2D* CaptureComponent2D;
 
-	UFUNCTION()
-		bool TraceResultPredicate(FHitResult Hit);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual FMatrix GetViewProjectionMatrix() override;
+	virtual TMap<int, FPointerRay>& GetCurrentPointers() override;
+	virtual int GetUuid_Internal() override;
+	virtual bool ShouldDrawDebugHelpers() override;
 
 public:	
 	// Called every frame
@@ -59,12 +59,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "BlueWindow|InteractiveSceneCapture")
 		TMap<int, FPointerRay> CurrentPointers;
-
-	void BeginPointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords, FPointerEvent pointerEvent);
-
-	void MovePointer(int SourceId, ETouchIndex::Type FingerIndex, FVector2D NormalizedCoords, FPointerEvent pointerEvent);
-
-	void EndPointer(int SourceId, ETouchIndex::Type FingerIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "Rendering")
 		void OnInterpToggle(bool bEnable);

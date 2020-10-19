@@ -1,10 +1,12 @@
-// Developed by MESO Digital Interiors GmbH. for HERE Technologies Inc. Confidential content only accessible to MESO Digital Interiors GmbH. employees
+// Developed by MESO Digital Interiors GmbH. All rights reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/LocalPlayer.h"
+#include "TraceEventSourceBase.h"
 #include "PointerRay.h"
+
 #include "Input/Events.h"
 #include "Blueprint/UserWidget.h"
 
@@ -18,13 +20,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerPointerRayEventSignature, FPo
  * 
  */
 UCLASS()
-class BLUEWINDOW_API ATraceEventPlayerController : public APlayerController
+class BLUEWINDOW_API ATraceEventPlayerController
+    : public APlayerController
+	, public ITraceEventSourceBase
 {
 	GENERATED_BODY()
 private:
-
-	void CastPointerRay(FPointerRay& ray, FVector2D NormalizedCoords, bool begin, bool fromLocalPlayer);
-	void ComputeRayForViewProjection(FVector2D NormalizedCoords, FVector& Start, FVector& End);
 
 	TSet<FKey> PressedButtonsDummy;
 	FModifierKeysState ModifierKeysDummy;
@@ -38,11 +39,12 @@ protected:
 
 	FPointerEvent GetPointerEvent(uint32 Handle, FVector2D TouchLocation);
 	FPointerEvent GetPointerEventWithDelta(uint32 Handle, FVector2D TouchLocation);
+	virtual bool ShouldDrawDebugHelpers() override;
 
 	TMap<uint32, FVector2D> LastTouchLocations;
 
-	UFUNCTION()
-		bool TraceResultPredicate(FHitResult Hit);
+	virtual TMap<int, FPointerRay>& GetCurrentPointers() override;
+	virtual int GetUuid_Internal() override;
 
 public:
 
@@ -52,7 +54,7 @@ public:
 		TMap<int, FPointerRay> CurrentPointers;
 
 	UFUNCTION(BlueprintPure, Category = "BlueWindow")
-		FMatrix GetViewProjectionMatrix();
+		virtual FMatrix GetViewProjectionMatrix() override;
 
 	virtual bool InputTouch(
 		uint32 Handle,
@@ -62,24 +64,6 @@ public:
 		FDateTime DeviceTimestamp,
 		uint32 TouchpadIndex
 	) override;
-
-	void BeginPointer(
-		int SourceId,
-		ETouchIndex::Type FingerIndex,
-		FVector2D NormalizedCoords,
-		FPointerEvent pointerEvent,
-		bool fromLocalPlayer
-	);
-
-	void MovePointer(
-		int SourceId,
-		ETouchIndex::Type FingerIndex,
-		FVector2D NormalizedCoords,
-		FPointerEvent pointerEvent,
-		bool fromLocalPlayer
-	);
-
-	void EndPointer(int SourceId, ETouchIndex::Type FingerIndex, bool fromLocalPlayer);
 
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
 		void BeginPointer(UWidget* SourceWidget, FGeometry geometry, FPointerEvent pointerEvent);
@@ -122,4 +106,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BlueWindow")
 		float RayLength = 250000;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "BlueWindow|InteractiveSceneCapture")
+		bool DrawDebugHelpers;
 };
