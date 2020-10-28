@@ -1,0 +1,3 @@
+[submodule "Shaders/cme"]
+	path = Shaders/cme
+	url = https://github.com/microdee/md.ush.git
