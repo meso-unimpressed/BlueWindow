@@ -2,12 +2,21 @@
 
 #include "BlueWindow.h"
 
+
+#include "CommandLine.h"
+#include "PixelstreamingManager.h"
+
 #define LOCTEXT_NAMESPACE "FBlueWindowModule"
 
 void FBlueWindowModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	
+	FString PixelStreamingIP = "";
+	if (FParse::Value(FCommandLine::Get(), TEXT("PixelstreamingIP"), PixelStreamingIP))
+	{
+		PixelStreamingIP = PixelStreamingIP.Replace(TEXT("="), TEXT(""));
+	}
+	PixelstreamingManager::InitPixelstreamingManager(PixelStreamingIP);
 }
 
 void FBlueWindowModule::ShutdownModule()
