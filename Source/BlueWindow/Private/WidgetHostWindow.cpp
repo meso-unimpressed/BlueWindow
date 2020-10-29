@@ -4,6 +4,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "GlobalInputProcessor.h"
+#include "PixelstreamingManager.h"
 
 // Sets default values for this component's properties
 UWidgetHostWindow::UWidgetHostWindow()
@@ -92,80 +93,87 @@ void UWidgetHostWindow::OpenWindow(
 
 	Settings = settings;
 
-	FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
-	FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
+	if (!PixelstreamingManager::GetPixelstreamingActive())
+	{
+		FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
+		FVector2D offset = FVector2D(targetMonitor.WorkArea.Left, targetMonitor.WorkArea.Top) + settings.TopLeftOffset;
 
-	sWindow = SNew(SInputPropagatingWindow)
-		.WindowArgs(SWindow::FArguments()
-			.Title(settings.Title)
-			.HasCloseButton(settings.HasCloseButton)
-			.IsInitiallyMaximized(false)
-			.ScreenPosition(offset)
-			.ClientSize(settings.Size)
-			.UseOSWindowBorder(settings.UseOSWindowBorder)
-			.CreateTitleBar(settings.CreateTitleBar)
-			.SizingRule(ESizingRule::UserSized)
-			.SupportsMaximize(settings.SupportsMaximize)
-			.SupportsMinimize(settings.SupportsMinimize)
-			.InitialOpacity(settings.Opacity)
-			.UserResizeBorder(settings.ResizeBorder)
-		)
-		.TargetWorld(GetWorld())
-		.HandleEvents(false)
-		.PropagateKeys(true)
-		.PropagateTouchGestures(true);
+		sWindow = SNew(SInputPropagatingWindow)
+			.WindowArgs(SWindow::FArguments()
+				.Title(settings.Title)
+				.HasCloseButton(settings.HasCloseButton)
+				.IsInitiallyMaximized(false)
+				.ScreenPosition(offset)
+				.ClientSize(settings.Size)
+				.UseOSWindowBorder(settings.UseOSWindowBorder)
+				.CreateTitleBar(settings.CreateTitleBar)
+				.SizingRule(ESizingRule::UserSized)
+				.SupportsMaximize(settings.SupportsMaximize)
+				.SupportsMinimize(settings.SupportsMinimize)
+				.InitialOpacity(settings.Opacity)
+				.UserResizeBorder(settings.ResizeBorder)
+			)
+			.TargetWorld(GetWorld())
+			.HandleEvents(false)
+			.PropagateKeys(true)
+			.PropagateTouchGestures(true);
 
-	SWINDOW_KEYEVENT_TUNNEL(OnKeyDown);
-	SWINDOW_KEYEVENT_TUNNEL(OnKeyUp);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchGesture);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchStarted);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchMoved);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchForceChanged);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnTouchEnded);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnMouseButtonDown);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnMouseButtonUp);
-	SWINDOW_TOUCHEVENT_TUNNEL(OnMouseMove);
+		SWINDOW_KEYEVENT_TUNNEL(OnKeyDown);
+		SWINDOW_KEYEVENT_TUNNEL(OnKeyUp);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnTouchGesture);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnTouchStarted);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnTouchMoved);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnTouchForceChanged);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnTouchEnded);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnMouseButtonDown);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnMouseButtonUp);
+		SWINDOW_TOUCHEVENT_TUNNEL(OnMouseMove);
 
-	auto refWindow = sWindow.ToSharedRef();
-	FSlateApplication& slateApp = FSlateApplication::Get();
-	slateApp.AddWindow(refWindow, true);
+		auto refWindow = sWindow.ToSharedRef();
+		FSlateApplication& slateApp = FSlateApplication::Get();
+		slateApp.AddWindow(refWindow, true);
+	}
 
 	outContent = Content = CreateWidget<UUserWidget>(owner, content);
 	sContent = Content->TakeWidget();
 
-	sBox = SNew(SInputPropagator)
-		.BoxArgs(SBox::FArguments()
-			.HAlign(EHorizontalAlignment::HAlign_Fill)
-			.VAlign(EVerticalAlignment::VAlign_Fill)
-			.WidthOverride(FOptionalSize(settings.Size.X))
-			.HeightOverride(FOptionalSize(settings.Size.Y))
-		)
-		.TargetWorld(GetWorld())
-		.HandleEvents(true)
-		.PropagateKeys(false)
-		.PropagateTouchGestures(false)
-		.Content()[ sContent.ToSharedRef() ];
-
-	FOnWindowClosed onclosed;
-	onclosed.BindLambda([this](const TSharedRef < SWindow >& window)
+	if (!PixelstreamingManager::GetPixelstreamingActive())
 	{
-		OnWindowClosed.Broadcast();
-	});
-	sWindow->SetOnWindowClosed(onclosed);
+		sBox = SNew(SInputPropagator)
+			.BoxArgs(SBox::FArguments()
+				.HAlign(EHorizontalAlignment::HAlign_Fill)
+				.VAlign(EVerticalAlignment::VAlign_Fill)
+				.WidthOverride(FOptionalSize(settings.Size.X))
+				.HeightOverride(FOptionalSize(settings.Size.Y))
+			)
+			.TargetWorld(GetWorld())
+			.HandleEvents(true)
+			.PropagateKeys(false)
+			.PropagateTouchGestures(false)
+			.Content()[sContent.ToSharedRef()];
 
-	FOnWindowMoved onmoved;
-	onmoved.BindLambda([this](const TSharedRef < SWindow >& window)
-	{
-		/*sBox->SetWidthOverride(FOptionalSize(window->GetClientSizeInScreen().X));
-		sBox->SetHeightOverride(FOptionalSize(window->GetClientSizeInScreen().Y));*/
-		OnWindowMoved.Broadcast(
-			sWindow->GetPositionInScreen(),
-			sWindow->GetSizeInScreen()
-		);
-	});
-	sWindow->SetOnWindowMoved(onmoved);
+		FOnWindowClosed onclosed;
+		onclosed.BindLambda([this](const TSharedRef < SWindow >& window)
+			{
+				OnWindowClosed.Broadcast();
+			});
+		sWindow->SetOnWindowClosed(onclosed);
 
-	sWindow->SetContent(sBox.ToSharedRef());
+		FOnWindowMoved onmoved;
+		onmoved.BindLambda([this](const TSharedRef < SWindow >& window)
+			{
+				/*sBox->SetWidthOverride(FOptionalSize(window->GetClientSizeInScreen().X));
+				sBox->SetHeightOverride(FOptionalSize(window->GetClientSizeInScreen().Y));*/
+				OnWindowMoved.Broadcast(
+					sWindow->GetPositionInScreen(),
+					sWindow->GetSizeInScreen()
+				);
+			});
+		sWindow->SetOnWindowMoved(onmoved);
+
+		sWindow->SetContent(sBox.ToSharedRef());
+	}
+	
 	SetSettings(settings, true);
 }
 
@@ -217,7 +225,11 @@ uint64_t UWidgetHostWindow::GetMonitorOrderComparer(FMonitorInfo moninfo, int64 
 
 #pragma optimize("", on)
 
-void UWidgetHostWindow::BringToFront(bool bForce) { sWindow->BringToFront(bForce); }
+void UWidgetHostWindow::BringToFront(bool bForce)
+{
+	if (PixelstreamingManager::GetPixelstreamingActive()) return;
+	sWindow->BringToFront(bForce);
+}
 
 void UWidgetHostWindow::SetSettings(FBlueWindowSettings settings, bool force)
 {

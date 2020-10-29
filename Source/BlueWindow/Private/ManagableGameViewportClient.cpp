@@ -9,6 +9,7 @@
 #include "HardwareInfo.h"
 #include "Blueprint/UserWidget.h"
 #include "GlobalInputProcessor.h"
+#include "PixelstreamingManager.h"
 
 //#if PLATFORM_WINDOWS && !defined(WINDOWS_PLATFORM_TYPES_GUARD)
 //#include "AllowWindowsPlatformTypes.h"
@@ -179,6 +180,7 @@ void UManagableGameViewportClient::SetSettings(FBlueWindowSettings settings, boo
 
 	if (!Viewport) return;
 	if (!sWindow) return;
+	if (PixelstreamingManager::GetPixelstreamingActive()) return;
 
 	FMonitorInfo targetMonitor = GetMonitor(settings.TargetMonitor);
 	auto monwa = targetMonitor.DisplayRect;
