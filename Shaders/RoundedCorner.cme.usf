@@ -11,10 +11,10 @@ float4 FillColor;
 float4 main(float2 uv : TEXCOORD0) : SV_Target
 {
 #include "cme/math/common.mh"
-#include "cme/math/rotate.mh"
-#include "cme/df/RoundedCorner.mh"
+#include "cme/math/rotate.mh" rot;
+#include "cme/df/RoundedCorner.mh" rc;
 
-    float2 ruv = rotate2d_pos(uv-0.5, Rotate / 360.0);
+    float2 ruv = rot.rot(uv-0.5, Rotate * DEG_RAD);
     ruv += 0.5;
 
     float2 resol = resolution(ruv);
@@ -22,10 +22,10 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target
 
     float cornerMul = lerp(1, vmin2(resol), UvSpaceCorner);
     float2 P = (uv-0.5) * resol;
-    RoundedCorner.Corners = CornersIn * cornerMul;
-    RoundedCorner.Size = resol * 0.5 - 1;
+    rc.Corners = CornersIn * cornerMul;
+    rc.Size = resol * 0.5 - 1;
 
-    float rcdf = RoundedCorner.Df(P);
+    float rcdf = rc.Df(P);
 
     float edgeThr = EdgeSize * lerp(1, vmin2(resol), UvSpaceEdge);
 
