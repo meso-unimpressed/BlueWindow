@@ -1,0 +1,118 @@
+
+float2 iResolution;
+float UvSpaceEdge;
+float UvSpaceCorner;
+float UvSpaceArrow;
+float IgnoreAspectRatio;
+float Rotate;
+float4 CornersIn;
+
+float ArrowLocation;
+float ArrowWidth;
+float ArrowHeight;
+float ArrowHeightCoeff;
+float KeepSize;
+float SmoothUnion;
+
+float EdgeSize;
+float4 EdgeColor;
+float4 FillColor;
+
+float4 main(float2 uv : TEXCOORD0) : SV_Target
+{
+#include "cme/math/common.mh"
+#include "cme/math/rotate.mh" rot;
+#include "cme/df/RoundedCorner.mh" rc;
+#include "cme/df/dfops.mh" ops;
+#include "cme/df/df2d.shapes.mh" shapes;
+
+    float2 ruv = rot.rot(uv-0.5, Rotate * DEG_RAD);
+    ruv += 0.5;
+
+    float2 resol = lerp(iResolution, vmin2(iResolution), IgnoreAspectRatio);
+    resol = lerp(resol, vmin2(resol), IgnoreAspectRatio);
+
+    float2 boxSize = resol * 0.5 - 1;
+    float2 rcSize = boxSize;
+    float2 rcOffs = 0;
+
+    float2 arrWH = float2(ArrowWidth, ArrowHeight);
+    arrWH *= lerp(1, vmin2(resol) * 0.5, UvSpaceArrow);
+
+    // target angle of Arrow, and segmentation
+    float arrAnglIn = fmod(ArrowLocation * DEG_RAD, PI2);
+    
+    float2 arrCircLoc = float2(
+        cos(arrAnglIn + PI) * length(boxSize),
+        sin(arrAnglIn + PI) * length(boxSize)
+    );
+
+    float2 arrCircLocC = clamp(arrCircLoc, -boxSize, boxSize);
+
+    if(all(arrWH > 0))
+    {
+        //retract box size by arrow size based on segmentation
+        if(KeepSize > 0.5)
+        {
+            rcSize -= arrWH.y;
+        }
+        else if(arrCircLoc.y == arrCircLocC.y && arrCircLoc.x < arrCircLocC.x)
+        {
+            rcSize.x -= arrWH.y * 0.5;
+            rcOffs.x = arrWH.y * 0.5;
+        }
+        else if(arrCircLoc.x == arrCircLocC.x && arrCircLoc.y < arrCircLocC.y)
+        {
+            rcSize.y -= arrWH.y * 0.5;
+            rcOffs.y = arrWH.y * 0.5;
+        }
+        else if(arrCircLoc.y == arrCircLocC.y && arrCircLoc.x > arrCircLocC.x)
+        {
+            rcSize.x -= arrWH.y * 0.5;
+            rcOffs.x = -arrWH.y * 0.5;
+        }
+        else if(arrCircLoc.x == arrCircLocC.x && arrCircLoc.y > arrCircLocC.y)
+        {
+            rcSize.y -= arrWH.y * 0.5;
+            rcOffs.y = -arrWH.y * 0.5;
+        }
+    }
+
+    float cornerMul = lerp(1, vmin2(rcSize), UvSpaceCorner);
+    rc.Corners = CornersIn * cornerMul;
+    rc.Size = rcSize;
+
+    float2 P = (uv-0.5) * resol;
+    float2 rcP = P - rcOffs;
+
+    float result = rc.Df(rcP);
+    
+    if(all(arrWH > 0))
+    {
+        float arrRcDf = rc.Df(arrCircLocC);
+        float2 rcdfGrad = rc.DfGrad(arrCircLocC, 1.0f);
+        float2 arrLoc = P - (arrCircLocC - (arrRcDf - arrWH.y * lerp(0.5, 1.0, KeepSize)) * rcdfGrad);
+        float arrAngle = -atan2(rcdfGrad.y, rcdfGrad.x) - PIh;
+        arrLoc = rot.rot(arrLoc, arrAngle);
+
+        float arrdf = shapes.sdTriangleIsosceles(
+            arrLoc,
+            arrWH * ArrowHeightCoeff
+        );
+        
+        float smunion = lerp(SmoothUnion, SmoothUnion * vmin2(resol), UvSpaceArrow);
+        result = ops.URound(result, arrdf, smunion);
+    }
+
+    float edgeThr = EdgeSize * lerp(1, vmin2(resol), UvSpaceEdge);
+
+    float inside = saturate(0.5 - edgeThr - result);
+    float body = saturate(0.5 - result);
+    float4 col = lerp(EdgeColor, FillColor, inside);
+    col.a = min(col.a, body);
+
+    //float4 dbgCol = float4(rc.DfGrad(rcP, 1.0f) * 0.5 + 0.5, 0, 1);
+    //dbgCol = max(dbgCol, abs(inside - body));
+    //dbgCol = max(dbgCol, saturate(0.5 - arrdf));
+    return col;
+}

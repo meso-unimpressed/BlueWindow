@@ -237,51 +237,57 @@ void UManagableGameViewportClient::Tick(float DeltaTime)
 
 	//GEngine->GameViewport->GetGameViewport()->UpdateRenderTargetSurfaceRHIToCurrentBackBuffer();
 
-	ENQUEUE_RENDER_COMMAND(void)([this, vps](FRHICommandListImmediate& RHICmdList)
+	auto currRHI = FHardwareInfo::GetHardwareInfo(NAME_RHI);
+
+	// TODO: investigate why it doesn't want to work on DX12
+	if(currRHI.Equals(TEXT("DX11")))
 	{
-		if (!Viewport) return;
-
-		auto RhiVpTex = Viewport->GetRenderTargetTexture();
-		auto RhiVp = Viewport->GetViewportRHI();
-
-		if(!RhiVpTex && RhiVp)
+		ENQUEUE_RENDER_COMMAND(void)([this, vps](FRHICommandListImmediate& RHICmdList)
 		{
-			RhiVpTex = RHIGetViewportBackBuffer(RhiVp);
-		}
-		if (!RhiVpTex) return;
+			if (!Viewport) return;
 
-		if (!ViewportCopy)
-		{
-			ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, RhiVpTex->GetFormat());
-			ViewportCopy->UpdateResource();
-		}
+			auto RhiVpTex = Viewport->GetRenderTargetTexture();
+			auto RhiVp = Viewport->GetViewportRHI();
 
-		if (
-			ViewportCopy->GetSizeX() != vps.X || ViewportCopy->GetSizeY() != vps.Y ||
-			ViewportCopy->GetPixelFormat() != RhiVpTex->GetFormat()
-		) {
-			ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, RhiVpTex->GetFormat());
-			ViewportCopy->UpdateResource();
-		}
+			if (!RhiVpTex && RhiVp)
+			{
+				RhiVpTex = RHIGetViewportBackBuffer(RhiVp);
+			}
+			if (!RhiVpTex) return;
 
-		FRHICopyTextureInfo info;
-		info.DestMipIndex = 0;
-		info.DestPosition = FIntVector::ZeroValue;
-		info.DestSliceIndex = 0;
-		info.NumMips = 1;
-		info.NumSlices = 1;
-		info.Size = FIntVector(RhiVpTex->GetSizeX(), RhiVpTex->GetSizeY(), 1);
-		info.SourceMipIndex = 0;
-		info.SourcePosition = FIntVector::ZeroValue;
-		info.SourceSliceIndex = 0;
+			if (!ViewportCopy)
+			{
+				ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, RhiVpTex->GetFormat());
+				ViewportCopy->UpdateResource();
+			}
 
-		auto dstRes = (FTexture2DResource*)ViewportCopy->Resource;
-		GDynamicRHI->RHIGetDefaultContext()->RHICopyTexture(
-			RhiVpTex.GetReference(),
-			dstRes->GetTexture2DRHI(),
-			info
-		);
-	});
+			if (
+				ViewportCopy->GetSizeX() != vps.X || ViewportCopy->GetSizeY() != vps.Y ||
+				ViewportCopy->GetPixelFormat() != RhiVpTex->GetFormat()
+				) {
+				ViewportCopy = UTexture2D::CreateTransient(vps.X, vps.Y, RhiVpTex->GetFormat());
+				ViewportCopy->UpdateResource();
+			}
+
+			FRHICopyTextureInfo info;
+			info.DestMipIndex = 0;
+			info.DestPosition = FIntVector::ZeroValue;
+			info.DestSliceIndex = 0;
+			info.NumMips = 1;
+			info.NumSlices = 1;
+			info.Size = FIntVector(RhiVpTex->GetSizeX(), RhiVpTex->GetSizeY(), 1);
+			info.SourceMipIndex = 0;
+			info.SourcePosition = FIntVector::ZeroValue;
+			info.SourceSliceIndex = 0;
+
+			auto dstRes = (FTexture2DResource*)ViewportCopy->Resource;
+			GDynamicRHI->RHIGetDefaultContext()->RHICopyTexture(
+				RhiVpTex.GetReference(),
+				dstRes->GetTexture2DRHI(),
+				info
+			);
+		});
+	}
 }
 
 void UManagableGameViewportClient::MouseMove(FViewport* InViewport, int32 X, int32 Y)

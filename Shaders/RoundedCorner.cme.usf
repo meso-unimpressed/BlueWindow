@@ -1,0 +1,37 @@
+
+float2 iResolution;
+float UvSpaceEdge;
+float UvSpaceCorner;
+float IgnoreAspectRatio;
+float Rotate;
+float4 CornersIn;
+float EdgeSize;
+float4 EdgeColor;
+float4 FillColor;
+
+float4 main(float2 uv : TEXCOORD0) : SV_Target
+{
+#include "cme/math/common.mh"
+#include "cme/math/rotate.mh" rot;
+#include "cme/df/RoundedCorner.mh" rc;
+
+    float2 ruv = rot.rot(uv-0.5, Rotate * DEG_RAD);
+    ruv += 0.5;
+
+    float2 resol = lerp(iResolution, vmin2(iResolution), IgnoreAspectRatio);
+
+    float cornerMul = lerp(1, vmin2(resol), UvSpaceCorner);
+    float2 P = (uv-0.5) * resol;
+    rc.Corners = CornersIn * cornerMul;
+    rc.Size = resol * 0.5 - 1;
+
+    float rcdf = rc.Df(P);
+
+    float edgeThr = EdgeSize * lerp(1, vmin2(resol), UvSpaceEdge);
+
+    float inside = saturate(0.5 - edgeThr - rcdf);
+    float body = saturate(0.5 - rcdf);
+    float4 col = lerp(EdgeColor, FillColor, inside);
+    col.a = min(col.a, body);
+    return col;
+}
