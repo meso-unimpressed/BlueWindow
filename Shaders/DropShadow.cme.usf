@@ -1,0 +1,58 @@
+
+float2 iResolution;
+Texture2D Tex;
+float Distance;
+float DistanceSteps;
+float RadialSteps;
+float RadialOffset;
+float KernelPower;
+float2 ShadowOffset;
+float4 ShadowColor;
+
+float4 main(float2 uv : TEXCOORD0) : SV_Target
+{
+#include "cme/math/common.mh"
+#include "cme/math/colorSpace.mh" colSpace;
+
+    float CurCol=0;
+    float2 offsUv = uv - ShadowOffset / iResolution;
+    float2 pxs = 4 / iResolution;
+    float2 NewUV = offsUv;
+    int i=0;
+    float StepSize = Distance / (int) DistanceSteps;
+    float CurDistance=0;
+    float2 CurOffset=0;
+    float SubOffset = 0;
+    float accumdist=0;
+
+    float4 centerCol = Texture2DSample(Tex,TexSampler,uv);
+
+    if (DistanceSteps < 1)
+        return centerCol;
+
+    while ( i < (int) DistanceSteps)
+    {
+        CurDistance += StepSize;
+        for (int j = 0; j < (int) RadialSteps; j++)
+        {
+            SubOffset +=1;
+            CurOffset = float2(
+                cos(PI2*(SubOffset / RadialSteps)),
+                sin(PI2*(SubOffset / RadialSteps))
+            ) / iResolution;
+            NewUV = clamp(offsUv + CurOffset * CurDistance, pxs, 1-pxs);
+            float distpow = pow(CurDistance, KernelPower);
+            CurCol += Texture2DSample(Tex,TexSampler,NewUV).a * distpow;
+            accumdist += distpow;
+        }
+        SubOffset +=RadialOffset;
+        i++;
+    }
+    CurCol = CurCol;
+    CurCol /=accumdist;
+    float3 shadcol = ShadowColor.rgb * CurCol;
+    return float4(
+        lerp(ShadowColor.rgb * CurCol, centerCol.rgb, centerCol.a),
+        max(CurCol * ShadowColor.a, centerCol.a)
+    );
+}
