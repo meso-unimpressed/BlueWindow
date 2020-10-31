@@ -24,10 +24,12 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target
 
     float rcdf = rc.Df(P);
 
+    // check the difference between actual and reported resolution
+    float aaTerm = length(1/iResolution) / length(pixelsize(uv));
     float edgeThr = EdgeSize * lerp(1, vmin2(resol), UvSpaceEdge);
 
-    float inside = saturate(0.5 - (edgeThr + rcdf) * 0.5);
-    float body = saturate(0.5 - rcdf * 0.5);
+    float inside = saturate(0.5 - (edgeThr + rcdf) * aaTerm);
+    float body = saturate(0.5 - rcdf * aaTerm);
     float4 col = lerp(EdgeColor, FillColor, inside);
     col.a = min(col.a, body);
     return col;

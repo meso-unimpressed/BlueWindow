@@ -101,10 +101,12 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target
         result = ops.URound(result, arrdf, smunion);
     }
 
+    // check the difference between actual and reported resolution
+    float aaTerm = length(1/iResolution) / length(pixelsize(uv));
     float edgeThr = EdgeSize * lerp(1, vmin2(resol), UvSpaceEdge);
 
-    float inside = saturate(0.5 - (edgeThr + result) * 0.5);
-    float body = saturate(0.5 - result * 0.5);
+    float inside = saturate(0.5 - (edgeThr + result) * aaTerm);
+    float body = saturate(0.5 - result * aaTerm);
     float4 col = lerp(EdgeColor, FillColor, inside);
     col.a = min(col.a, body);
 
