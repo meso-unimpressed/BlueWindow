@@ -100,6 +100,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Retainer|Effect")
 	void SetTextureParameter(FName TextureParameter);
 
+	UFUNCTION(BlueprintPure, Category = "Retainer|Effect")
+	UTexture* GetTexture();
+
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 
 #if WITH_EDITOR

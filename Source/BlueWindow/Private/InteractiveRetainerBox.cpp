@@ -1,6 +1,9 @@
 
 
 #include "InteractiveRetainerBox.h"
+
+#include "Materials/MaterialInstanceDynamic.h"
+
 #include "Widgets/SNullWidget.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 
@@ -74,6 +77,15 @@ void UInteractiveRetainerBox::SetTextureParameter(FName InTextureParameter)
 	{
 		MyRetainerWidget->SetTextureParameter(TextureParameter);
 	}
+}
+
+UTexture* UInteractiveRetainerBox::GetTexture()
+{
+    auto effectMat = GetEffectMaterial();
+    if(!effectMat) return nullptr;
+	UTexture* res;
+	effectMat->GetTextureParameterValue({TextureParameter}, res);
+	return res;
 }
 
 void UInteractiveRetainerBox::ReleaseSlateResources(bool bReleaseChildren)
