@@ -107,7 +107,11 @@ float4 main(float2 uv : TEXCOORD0) : SV_Target
 
     float inside = saturate(0.5 - (edgeThr + result) * aaTerm);
     float body = saturate(0.5 - result * aaTerm);
-    float4 col = lerp(EdgeColor, FillColor, inside);
+
+    float4 col = edgeThr > 0.1 ?
+        lerp(EdgeColor, FillColor, inside) :
+        FillColor;
+        
     col.a = min(col.a, body);
 
     //float4 dbgCol = float4(rc.DfGrad(rcP, 1.0f) * 0.5 + 0.5, 0, 1);
