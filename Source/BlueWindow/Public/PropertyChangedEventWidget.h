@@ -21,8 +21,6 @@ class BLUEWINDOW_API UPropertyChangedEventWidget : public UUserWidget
 public:
 	//virtual void PostDuplicate(bool bDuplicateForPIE) override;
 	//virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
-	//virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	//virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	//virtual void PostEditImport() override;
 	//virtual void PostInitProperties() override;
 
@@ -31,6 +29,8 @@ public:
 
 	virtual void PostEditUndo() override;
 	virtual void PostEditUndo(TSharedPtr<ITransactionObjectAnnotation> TransactionAnnotation) override;
+	// virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	// virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	virtual void PostInterpChange(FProperty* PropertyThatChanged) override;
 
 	virtual void OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs) override;

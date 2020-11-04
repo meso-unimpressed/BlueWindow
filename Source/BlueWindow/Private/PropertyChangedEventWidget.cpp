@@ -2,6 +2,9 @@
 
 
 #include "PropertyChangedEventWidget.h"
+
+#include "PropertyBinding.h"
+
 #include "UObject/UnrealType.h"
 
 //void UPropertyChangedEventWidget::PostDuplicate(bool bDuplicateForPIE)
@@ -121,10 +124,10 @@ void UPropertyChangedEventWidget::OnEditorTickTrigger(float DeltaTime)
 void UPropertyChangedEventWidget::BeginDestroy()
 {
 	Super::BeginDestroy();
-	if (this->GetPathName() != "None.None")
-	{
-		AllPropChangedWidgets.Remove(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
-	}
+	if (this->GetPathName().Contains(TEXT("None.None"))) return;
+	if (this->GetName() == TEXT("None")) return;
+
+	AllPropChangedWidgets.Remove(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
 }
 
 #endif
