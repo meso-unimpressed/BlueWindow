@@ -27,7 +27,6 @@ public:
 	//virtual void PostInitProperties() override;
 
 #if WITH_EDITOR
-	static FTimerDelegate OnTickDel;
 
 	virtual void PostEditUndo() override;
 	virtual void PostEditUndo(TSharedPtr<ITransactionObjectAnnotation> TransactionAnnotation) override;
@@ -36,14 +35,15 @@ public:
 	virtual void PostInterpChange(FProperty* PropertyThatChanged) override;
 
 	virtual void OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs) override;
-	static void OnEditorTickTrigger(float DeltaTime);
-	static TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> AllPropChangedWidgets;
-	static TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> RemovablePropChangedWidgets;
-	bool Initialize() override;
 
-	void BeginDestroy() override;
+    virtual bool Initialize() override;
+
+    virtual void BeginDestroy() override;
+
+private:
+	FDelegateHandle EditorTickHandle;
 #endif
-
+public:
 	virtual void SynchronizeProperties() override;
 
 	/**
@@ -69,7 +69,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 	FEditorTickDelegate OnEditorTick;
 
-	void NotifyOnEditorTick(float DeltaTime);
+	virtual void NotifyOnEditorTick(float DeltaTime);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EditorTick"), Category = "BlueWindow")
 	void ReceiveOnEditorTick(float DeltaTime);

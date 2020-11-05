@@ -41,8 +41,9 @@
 
 #if WITH_EDITOR
 
-#include "Editor.h"
 #include "Misc/App.h"
+#include "Editor/UnrealEdEngine.h"
+#include "UnrealEdGlobals.h"
 
 void UPropertyChangedEventWidget::PostEditUndo()
 {
@@ -68,68 +69,26 @@ void UPropertyChangedEventWidget::OnDesignerChanged(const FDesignerChangedEventA
 	NotifyOnAnyPropertyChanged();
 }
 
-FTimerDelegate UPropertyChangedEventWidget::OnTickDel;
-TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> UPropertyChangedEventWidget::AllPropChangedWidgets;
-TSet<TSoftObjectPtr<UPropertyChangedEventWidget>> UPropertyChangedEventWidget::RemovablePropChangedWidgets;
-
 bool UPropertyChangedEventWidget::Initialize()
 {
 	Super::Initialize();
-	if (!GEditor) return true;
-
-	if (!OnTickDel.IsBound())
-	{
-		OnTickDel = OnTickDel.CreateLambda([this]()
-		{
-			OnEditorTickTrigger(FApp::GetDeltaTime());
-		});
-
-		GEditor->GetTimerManager().Get().SetTimerForNextTick(OnTickDel);
-	}
-
-	AllPropChangedWidgets.Add(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
-
+	if (!GUnrealEd->OnPostEditorTick().IsBoundToObject(this))
+		EditorTickHandle = GUnrealEd->OnPostEditorTick().AddUObject(this, &UPropertyChangedEventWidget::NotifyOnEditorTick);
 	return true;
-}
-
-void UPropertyChangedEventWidget::OnEditorTickTrigger(float DeltaTime)
-{
-	RemovablePropChangedWidgets.Empty();
-
-	for(auto widget : AllPropChangedWidgets)
-	{
-		if (widget.IsValid())
-		{
-			UWorld* const World = GEngine->GetWorldFromContextObject(widget.Get(), EGetWorldErrorMode::ReturnNull);
-			if(World)
-			{
-				if (World->WorldType != EWorldType::PIE)
-					widget->NotifyOnEditorTick(DeltaTime);
-			}
-			else widget->NotifyOnEditorTick(DeltaTime);
-		}
-		else
-		{
-			RemovablePropChangedWidgets.Add(widget);
-			UE_LOG(LogTemp, Display, TEXT("a PropertyChangedEvent widget was Removed"));
-		}
-	}
-
-	for(auto widget : RemovablePropChangedWidgets)
-	{
-		AllPropChangedWidgets.Remove(widget);
-	}
-
-	GEditor->GetTimerManager().Get().SetTimerForNextTick(OnTickDel);
 }
 
 void UPropertyChangedEventWidget::BeginDestroy()
 {
 	Super::BeginDestroy();
-	if (this->GetPathName().Contains(TEXT("None.None"))) return;
-	if (this->GetName() == TEXT("None")) return;
 
-	AllPropChangedWidgets.Remove(TSoftObjectPtr<UPropertyChangedEventWidget>(this));
+	if (GUnrealEd->OnPostEditorTick().IsBoundToObject(this))
+	{
+		GUnrealEd->OnPostEditorTick().Remove(EditorTickHandle);
+	}
+	EditorTickHandle.Reset();
+
+	//if (this->GetPathName().Contains(TEXT("None.None"))) return;
+	//if (this->GetName() == TEXT("None")) return;
 }
 
 #endif
@@ -179,6 +138,7 @@ void UPropertyChangedEventWidget::NotifyOnAnyPropertyChanged()
 
 void UPropertyChangedEventWidget::NotifyOnEditorTick(float DeltaTime)
 {
+    if(!this->IsValidLowLevelFast()) return;
 	OnEditorTick.Broadcast(DeltaTime);
 	ReceiveOnEditorTick(DeltaTime);
 }
