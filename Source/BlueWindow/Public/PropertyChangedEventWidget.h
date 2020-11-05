@@ -55,7 +55,7 @@ public:
 	 * @param bRestoreState		Restore animated parameters after session has ended.
 	 */
 	UFUNCTION(BlueprintCallable, Category="BlueWindow")
-	void JumpToTime(UWidgetAnimation* Animation, float Time, bool bPrimeSession, bool bRestoreState);
+	void JumpToTime(UWidgetAnimation* Animation, float Time, bool bNormalizeDuration, bool bPrimeSession, bool bRestoreState);
 
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
 	FAnyPropertyChangedDelegate OnAnyPropertyChanged;

@@ -5,7 +5,7 @@
 
 #include "PropertyBinding.h"
 #include "UMGSequencePlayer.h"
-
+#include "MovieSceneTimeHelpers.h"
 
 #include "UObject/UnrealType.h"
 
@@ -99,7 +99,7 @@ void UPropertyChangedEventWidget::SynchronizeProperties()
 	NotifyOnAnyPropertyChanged();
 }
 
-void UPropertyChangedEventWidget::JumpToTime(UWidgetAnimation* Animation, float Time, bool bPrimeSession, bool bRestoreState)
+void UPropertyChangedEventWidget::JumpToTime(UWidgetAnimation* Animation, float Time, bool bNormalizeDuration, bool bPrimeSession, bool bRestoreState)
 {
     UUMGSequencePlayer* Player = GetOrAddSequencePlayer(Animation);
 	if(!Player) return;
@@ -111,7 +111,14 @@ void UPropertyChangedEventWidget::JumpToTime(UWidgetAnimation* Animation, float 
 	if(Player->GetEvaluationTemplate().IsValid())
 	{
 	    auto AnimRes = Animation->GetMovieScene()->GetTickResolution();
-	    FFrameTime FrameTime = Time * AnimRes;
+		float duration = 1;
+		if(bNormalizeDuration)
+		{
+		    auto durFrame = MovieScene::DiscreteSize(Animation->GetMovieScene()->GetPlaybackRange());
+			duration = AnimRes.AsSeconds(durFrame);
+		}
+
+	    FFrameTime FrameTime = (Time * duration) * AnimRes;
 
 	    FMovieSceneContext Context(
 		    FMovieSceneEvaluationRange(FrameTime, AnimRes),
