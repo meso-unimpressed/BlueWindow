@@ -43,6 +43,7 @@ public class BlueWindow : ModuleRules
                 "SlateCore",
                 "RenderCore",
                 "RHI",
+                "MovieScene"
             }
 		);
 			

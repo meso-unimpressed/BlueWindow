@@ -4,6 +4,8 @@
 #include "PropertyChangedEventWidget.h"
 
 #include "PropertyBinding.h"
+#include "UMGSequencePlayer.h"
+
 
 #include "UObject/UnrealType.h"
 
@@ -136,6 +138,37 @@ void UPropertyChangedEventWidget::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
 	NotifyOnAnyPropertyChanged();
+}
+
+void UPropertyChangedEventWidget::JumpToTime(UWidgetAnimation* Animation, float Time, bool bPrimeSession, bool bRestoreState)
+{
+    UUMGSequencePlayer* Player = GetOrAddSequencePlayer(Animation);
+	if(!Player) return;
+
+	if (!Player->GetEvaluationTemplate().IsValid() && bPrimeSession)
+	{
+		Player->GetEvaluationTemplate().Initialize(*Animation, *Player);
+	}
+	if(Player->GetEvaluationTemplate().IsValid())
+	{
+	    auto AnimRes = Animation->GetMovieScene()->GetTickResolution();
+	    FFrameTime FrameTime = Time * AnimRes;
+
+	    FMovieSceneContext Context(
+		    FMovieSceneEvaluationRange(FrameTime, AnimRes),
+		    EMovieScenePlayerStatus::Jumping
+	    );
+	    Context.SetHasJumped(true);
+		Player->GetEvaluationTemplate().Evaluate(Context, *Player);
+
+		if(!bPrimeSession)
+		{
+			Player->GetEvaluationTemplate().Finish(*Player);
+
+			if(bRestoreState)
+			    Player->RestorePreAnimatedState();
+		}
+	}
 }
 
 void UPropertyChangedEventWidget::NotifyOnAnyPropertyChanged()

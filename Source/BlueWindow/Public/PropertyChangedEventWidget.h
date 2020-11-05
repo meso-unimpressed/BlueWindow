@@ -11,6 +11,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAnyPropertyChangedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEditorTickDelegate, float, DeltaTime);
 
+class UWidgetAnimation;
+
 /**
  * 
  */
@@ -44,21 +46,32 @@ public:
 
 	virtual void SynchronizeProperties() override;
 
+	/**
+	 * Seek animation and evaluate it at specified time
+	 *
+	 * @param Animation			Input animation
+	 * @param Time				Target time in seconds
+	 * @param bPrimeSession		Make it true while animating, false when not anymore
+	 * @param bRestoreState		Restore animated parameters after session has ended.
+	 */
+	UFUNCTION(BlueprintCallable, Category="BlueWindow")
+	void JumpToTime(UWidgetAnimation* Animation, float Time, bool bPrimeSession, bool bRestoreState);
+
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
-		FAnyPropertyChangedDelegate OnAnyPropertyChanged;
+	FAnyPropertyChangedDelegate OnAnyPropertyChanged;
 
 	void NotifyOnAnyPropertyChanged();
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "AnyPropertyChanged"), Category = "BlueWindow")
-		void ReceiveOnAnyPropertyChanged();
+	void ReceiveOnAnyPropertyChanged();
 
 
 	UPROPERTY(BlueprintAssignable, Category = "BlueWindow")
-		FEditorTickDelegate OnEditorTick;
+	FEditorTickDelegate OnEditorTick;
 
 	void NotifyOnEditorTick(float DeltaTime);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EditorTick"), Category = "BlueWindow")
-		void ReceiveOnEditorTick(float DeltaTime);
+	void ReceiveOnEditorTick(float DeltaTime);
 
 };
