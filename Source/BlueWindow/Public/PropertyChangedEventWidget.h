@@ -74,4 +74,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "EditorTick"), Category = "BlueWindow")
 	void ReceiveOnEditorTick(float DeltaTime);
 
+	UFUNCTION(BlueprintPure, Category = "BlueWindow")
+	bool GetIsDesignTime();
+
 };

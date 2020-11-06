@@ -149,3 +149,8 @@ void UPropertyChangedEventWidget::NotifyOnEditorTick(float DeltaTime)
 	OnEditorTick.Broadcast(DeltaTime);
 	ReceiveOnEditorTick(DeltaTime);
 }
+
+bool UPropertyChangedEventWidget::GetIsDesignTime()
+{
+    return IsDesignTime();
+}
