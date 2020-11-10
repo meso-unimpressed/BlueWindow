@@ -7,6 +7,8 @@
 #include "PointerRay.h"
 #include "TraceEventActor.h"
 
+#include "Components/PrimitiveComponent.h"
+
 std::tuple<FVector, FVector> ITraceEventSourceBase::ComputeRayForViewProjection(FMatrix ViewProj, FVector2D NormCoord, const FPointerRayOptions& RayOptions)
 {
 	FVector screenStart(NormCoord.X, NormCoord.Y, 1);

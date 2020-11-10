@@ -21,6 +21,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowResized);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBlueWindowClosed);
 
 class UGlobalInputProcessor;
+class UInputProcessorCollection;
 
 UCLASS( ClassGroup=(BlueWindow), meta=(BlueprintSpawnableComponent) )
 class BLUEWINDOW_API UWidgetHostWindow : public UActorComponent

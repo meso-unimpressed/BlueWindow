@@ -2,9 +2,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Events.h"
+#include "Geometry.h"
 #include "UObject/Interface.h"
 
 #include "GlobalInputProcessor.generated.h"
+
+class UUserWidget;
+class UGlobalInputProcessor;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPointerEventDynDel, FGeometry, geometry, FPointerEvent, pointerEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FKeyEventDynDel, FGeometry, geometry, FKeyEvent, keyEvent);
