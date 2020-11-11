@@ -113,6 +113,9 @@ bool LineTraceFiltered_Internal(UWorld* World, FVector Start, FVector End, TFilt
 	OutHits = TArray<FHitResult>();
 	TArray<FHitResult> tempHits;
 
+	FCollisionObjectQueryParams QueryParams = FCollisionObjectQueryParams::DefaultObjectQueryParam;
+	QueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+
 	FCollisionQueryParams CollisionParams;
 	//CollisionParams.AddIgnoredActors(ActorsToIgnore);
 	CollisionParams.bReturnFaceIndex = false;
@@ -125,8 +128,9 @@ bool LineTraceFiltered_Internal(UWorld* World, FVector Start, FVector End, TFilt
 
 	World->LineTraceMultiByObjectType(
 		tempHits, Start, End,
-		FCollisionObjectQueryParams::DefaultObjectQueryParam,
-		CollisionParams);
+		QueryParams,
+		CollisionParams
+	);
 
 	for (FHitResult hit : tempHits)
 	{

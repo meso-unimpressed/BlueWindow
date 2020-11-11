@@ -196,8 +196,9 @@ void ITraceEventSourceBase::TraceEventTick(float DeltaTime)
 bool ITraceEventSourceBase::TraceResultPredicate(FHitResult Hit)
 {
 	bool ignore = false;
+	AActor* hitActor = Hit.Actor.Get();
 	if (Hit.Actor.IsValid())
-		ignore = Hit.Actor->IsHidden() || Hit.Actor->Tags.Contains(TEXT("TraceIgnore"));
+		ignore = hitActor->IsHidden() || hitActor->Tags.Contains(TEXT("TraceIgnore"));
 	if (!ignore && Hit.Component.IsValid())
 		ignore = Hit.Component->ComponentTags.Contains(TEXT("TraceIgnore"));
 
