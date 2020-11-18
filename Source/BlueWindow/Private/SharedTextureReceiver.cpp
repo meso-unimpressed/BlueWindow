@@ -1,5 +1,8 @@
 
 #include "SharedTextureReceiver.h"
+
+#include <dxgi1_2.h>
+
 #include "HardwareInfo.h"
 //#include "Engine/Runtime/Windows/Private/D3D11RHIPrivate.h"
 
@@ -17,10 +20,9 @@ void USharedTextureReceiver::Initialize(int Width, int Height, int64 Handle, ESh
 {
 	failuer_ = false;
 	currRHI = FHardwareInfo::GetHardwareInfo(NAME_RHI);
-	if(currRHI.Equals("D3D11"))
+	if(currRHI.Equals("D3D12"))
 	{
-		D3D11Device = (ID3D11Device*)GDynamicRHI->RHIGetNativeDevice();
-		D3D11Device->GetImmediateContext(&pImmediateContext);
+		D3D12Device = (ID3D12Device*)GDynamicRHI->RHIGetNativeDevice();
 
 		Update(Width, Height, Handle, Format);
 	}
@@ -32,16 +34,16 @@ void USharedTextureReceiver::Update(int Width, int Height, int64 Handle, EShared
 	DstTexture = UTexture2D::CreateTransient(Width, Height, (EPixelFormat)Format);
 	DstTexture->UpdateResource();
 
-	if (currRHI.Equals("D3D11"))
+	if (currRHI.Equals("D3D12"))
 	{
 		DISPOSE_RESOURCE(sharedTexture);
 		//DISPOSE_RESOURCE(sharedResourceView);
 
-		ID3D11Resource* sharedResource;
+		IDXGIResource1* sharedResource;
 
-		HRESULT openResult = D3D11Device->OpenSharedResource(
+		HRESULT openResult = D3D12Device->OpenSharedHandle(
 			(HANDLE)uint64(Handle),
-			__uuidof(ID3D11Resource),
+			__uuidof(IDXGIResource1),
 			(void**)(&sharedResource)
 		);
 
@@ -81,16 +83,26 @@ UTexture2D* USharedTextureReceiver::GetTexture()
 		return DstTexture;
 	}
 
-	if (currRHI.Equals("D3D11"))
+	if (currRHI.Equals("D3D12"))
 	{
+		FRHIResourceCreateInfo CreateInfo {};
+		CreateInfo.bWithoutNativeResource = true;
+		D3D11_TEXTURE2D_DESC* Desc {};
+		sharedTexture->GetDesc(Desc);
+		FMemory::Memcpy(CreateInfo.BulkData, &sharedTexture, sizeof(Desc->Format) * Desc->ArraySize);
+		//CreateInfo.BulkData
+		GDynamicRHI->RHICreateTexture2D(Desc->Width, Desc->Height, )
+		
 		ENQUEUE_RENDER_COMMAND(void)([this](FRHICommandListImmediate& RHICmdList)
 		{
 			auto dstRes = (FTexture2DResource*)DstTexture->Resource;
-			pImmediateContext->CopyResource(
-				(ID3D11Texture2D*)dstRes->GetTexture2DRHI()->GetNativeResource(),
-				sharedTexture
-			);
+			RHICmdList.CopyTexture(dstRes->GetTexture2DRHI(), dstRes->GetTexture2DRHI(), );
+			//->CopyResource((ID3D11Texture2D*)dstRes->GetTexture2DRHI()->GetNativeResource(),sharedTexture);
 		});
+	}
+	else if(currRHI.Equals("D3D12"))
+	{
+		//Copy from dx11 texture into ftexture2dresource like before somehow
 	}
 
 	return DstTexture;

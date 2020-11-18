@@ -7,6 +7,7 @@
 #include "Windows/AllowWindowsPlatformTypes.h"
 #endif
 #include <d3d11.h>
+#include <d3d12.h>
 #if PLATFORM_WINDOWS
 #include "Windows/HideWindowsPlatformTypes.h"
 #endif
@@ -95,9 +96,10 @@ class BLUEWINDOW_API USharedTextureReceiver : public UObject
 {
 	GENERATED_BODY()
 private:
-	ID3D11Device* D3D11Device = nullptr;
+	ID3D12Device* D3D12Device = nullptr;
 	ID3D11DeviceContext* pImmediateContext = nullptr;
 
+	
 	ID3D11Texture2D* sharedTexture = nullptr;
 	//ID3D11ShaderResourceView* sharedResourceView = nullptr;
 
