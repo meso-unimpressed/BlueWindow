@@ -4,6 +4,7 @@
 #include <dxgi1_2.h>
 
 #include "HardwareInfo.h"
+#include <Runtime\D3D12RHI\Private\D3D12CommandContext.h>
 //#include "Engine/Runtime/Windows/Private/D3D11RHIPrivate.h"
 
 #define DISPOSE_RESOURCE(resource) if(resource) { resource->Release(); delete resource; resource = nullptr; }
@@ -34,23 +35,20 @@ void USharedTextureReceiver::Update(int Width, int Height, int64 Handle, EShared
 	DstTexture = UTexture2D::CreateTransient(Width, Height, (EPixelFormat)Format);
 	DstTexture->UpdateResource();
 
-	if (currRHI.Equals("D3D12"))
+	if (currRHI.Equals("D3D11"))
 	{
-		DISPOSE_RESOURCE(sharedTexture);
-		//DISPOSE_RESOURCE(sharedResourceView);
+		D3D11Device = (ID3D11Device*)GDynamicRHI->RHIGetNativeDevice();
+		D3D11Device->GetImmediateContext(&pImmediateContext);
 
-		IDXGIResource1* sharedResource;
-
-		HRESULT openResult = D3D12Device->OpenSharedHandle(
+		ID3D11Resource* sharedResource;
+		HRESULT openResult = D3D11Device->OpenSharedResource(
 			(HANDLE)uint64(Handle),
-			__uuidof(IDXGIResource1),
+			__uuidof(ID3D11Resource),
 			(void**)(&sharedResource)
 		);
 
-		HRESULT_FAIL(openResult, "Failed to open shared resource");
-
 		sharedTexture = (ID3D11Texture2D*)sharedResource;
-
+		
 		//HRESULT createSrvResult = D3D11Device->CreateShaderResourceView(
 		//	sharedResource,
 		//	NULL,
@@ -62,6 +60,19 @@ void USharedTextureReceiver::Update(int Width, int Height, int64 Handle, EShared
 		//FD3D11DynamicRHI* DynamicRHI = static_cast<FD3D11DynamicRHI*>(GDynamicRHI);
 
 		//GDynamicRHI->RHICreateTexture2DFromResource()
+	}
+	else if (currRHI.Equals("D3D12"))
+	{
+		DISPOSE_RESOURCE(sharedTexture);
+		//DISPOSE_RESOURCE(sharedResourceView);
+
+		HRESULT openResult = D3D12Device->OpenSharedHandle(
+			(HANDLE)uint64(Handle),
+			__uuidof(IDXGIResource1),
+			(void**)(&sharedResource)
+		);
+
+		HRESULT_FAIL(openResult, "Failed to open shared resource");
 	}
 }
 
@@ -83,26 +94,29 @@ UTexture2D* USharedTextureReceiver::GetTexture()
 		return DstTexture;
 	}
 
-	if (currRHI.Equals("D3D12"))
+	if (currRHI.Equals("D3D11"))
 	{
-		FRHIResourceCreateInfo CreateInfo {};
-		CreateInfo.bWithoutNativeResource = true;
-		D3D11_TEXTURE2D_DESC* Desc {};
-		sharedTexture->GetDesc(Desc);
-		FMemory::Memcpy(CreateInfo.BulkData, &sharedTexture, sizeof(Desc->Format) * Desc->ArraySize);
-		//CreateInfo.BulkData
-		GDynamicRHI->RHICreateTexture2D(Desc->Width, Desc->Height, )
-		
 		ENQUEUE_RENDER_COMMAND(void)([this](FRHICommandListImmediate& RHICmdList)
-		{
-			auto dstRes = (FTexture2DResource*)DstTexture->Resource;
-			RHICmdList.CopyTexture(dstRes->GetTexture2DRHI(), dstRes->GetTexture2DRHI(), );
-			//->CopyResource((ID3D11Texture2D*)dstRes->GetTexture2DRHI()->GetNativeResource(),sharedTexture);
-		});
+			{
+				auto dstRes = (FTexture2DResource*)DstTexture->Resource;
+				pImmediateContext->CopyResource(
+					(ID3D11Texture2D*)dstRes->GetTexture2DRHI()->GetNativeResource(),
+					sharedTexture
+				);
+			});
 	}
-	else if(currRHI.Equals("D3D12"))
-	{
-		//Copy from dx11 texture into ftexture2dresource like before somehow
+	else if (currRHI.Equals("D3D12"))
+	{	
+		ENQUEUE_RENDER_COMMAND(void)([this](FRHICommandListImmediate& RHICmdList)
+			{
+				auto dstRes = (FTexture2DResource*)DstTexture->Resource;
+				ID3D12Resource* DestTextureResource = GetD3D12TextureFromRHITexture(dstRes->GetTexture2DRHI()->GetTexture2D())->GetResource()->GetResource();
+				FD3D12CommandListHandle CommandListHandle = FD3D12DynamicRHI::GetD3DRHI()->GetAdapter(0).GetDevice(0)->GetDefaultCommandContext().CommandListHandle;
+				CommandListHandle->CopyResource(
+					DestTextureResource, 
+					(ID3D12Resource*)sharedResource
+				);
+			});
 	}
 
 	return DstTexture;

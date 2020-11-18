@@ -13,6 +13,9 @@
 #endif
 
 #include "CoreMinimal.h"
+
+#include <dxgi1_2.h>
+
 #include "Engine/Texture2D.h"
 
 #include "SharedTextureReceiver.generated.h"
@@ -96,11 +99,14 @@ class BLUEWINDOW_API USharedTextureReceiver : public UObject
 {
 	GENERATED_BODY()
 private:
+	//DX12 resources
+	IDXGIResource1* sharedResource;
 	ID3D12Device* D3D12Device = nullptr;
-	ID3D11DeviceContext* pImmediateContext = nullptr;
 
-	
+	//DX11 resource
+	ID3D11Device* D3D11Device = nullptr;
 	ID3D11Texture2D* sharedTexture = nullptr;
+	ID3D11DeviceContext* pImmediateContext = nullptr;
 	//ID3D11ShaderResourceView* sharedResourceView = nullptr;
 
 	FString currRHI;
