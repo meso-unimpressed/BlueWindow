@@ -4,7 +4,7 @@
 #include <dxgi1_2.h>
 
 #include "HardwareInfo.h"
-#include <Runtime\D3D12RHI\Private\D3D12CommandContext.h>
+//#include <Runtime\D3D12RHI\Private\D3D12CommandContext.h>
 //#include "Engine/Runtime/Windows/Private/D3D11RHIPrivate.h"
 
 #define DISPOSE_RESOURCE(resource) if(resource) { resource->Release(); delete resource; resource = nullptr; }
@@ -109,13 +109,13 @@ UTexture2D* USharedTextureReceiver::GetTexture()
 	{	
 		ENQUEUE_RENDER_COMMAND(void)([this](FRHICommandListImmediate& RHICmdList)
 			{
-				auto dstRes = (FTexture2DResource*)DstTexture->Resource;
-				ID3D12Resource* DestTextureResource = GetD3D12TextureFromRHITexture(dstRes->GetTexture2DRHI()->GetTexture2D())->GetResource()->GetResource();
-				FD3D12CommandListHandle CommandListHandle = FD3D12DynamicRHI::GetD3DRHI()->GetAdapter(0).GetDevice(0)->GetDefaultCommandContext().CommandListHandle;
-				CommandListHandle->CopyResource(
-					DestTextureResource, 
-					(ID3D12Resource*)sharedResource
-				);
+				//auto dstRes = (FTexture2DResource*)DstTexture->Resource;
+				//ID3D12Resource* DestTextureResource = GetD3D12TextureFromRHITexture(dstRes->GetTexture2DRHI()->GetTexture2D())->GetResource()->GetResource();
+				//FD3D12CommandListHandle CommandListHandle = FD3D12DynamicRHI::GetD3DRHI()->GetAdapter(0).GetDevice(0)->GetDefaultCommandContext().CommandListHandle;
+				//CommandListHandle->CopyResource(
+				//	DestTextureResource, 
+				//	(ID3D12Resource*)sharedResource
+				//);
 			});
 	}
 
