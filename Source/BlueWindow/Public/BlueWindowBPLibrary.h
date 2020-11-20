@@ -124,18 +124,18 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
      * Simple transform combination as it was matrix multiplication
      */
     UFUNCTION(BlueprintPure, Category = "Widgets")
-    FWidgetTransform CombineTransform(FWidgetTransform LHS, FWidgetTransform RHS);
+    static FWidgetTransform CombineTransform(FWidgetTransform LHS, FWidgetTransform RHS);
 
     /*
      * Simple transform inversion as it was matrix inversion
      */
     UFUNCTION(BlueprintPure, Category = "Widgets")
-    FWidgetTransform InverseTransform(FWidgetTransform Input);
+    static FWidgetTransform InverseTransform(FWidgetTransform Input);
 
     /*
      * Get all the transformations which influence the look of the target widget
      * It is a recursive operation, keep max-depth as low as possible
      */
     UFUNCTION(BlueprintPure, Category = "Widgets")
-    void GetAccumulatedWidgetRender(UWidget* Target, FWidgetTransform& Transform, float& Opacity, int MaxDepth = 100);
+    static void GetAccumulatedWidgetRender(UWidget* Target, FWidgetTransform& Transform, float& Opacity, int MaxDepth = 100);
 };
