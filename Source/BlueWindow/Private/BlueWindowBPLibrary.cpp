@@ -190,18 +190,32 @@ void UBlueWindowBPLibrary::GetAccumulatedWidgetRender(UWidget* Target, FWidgetTr
         Opacity = 1.0;
         return;
     }
-    if(MaxDepth <= 0 || !Target->GetParent())
-    {
-        Transform = Target->RenderTransform;
-        Opacity = Target->GetRenderOpacity();
-        return;
-    }
-    FWidgetTransform ParentTr;
-    float ParentOp;
-    GetAccumulatedWidgetRender(Target->GetParent(), ParentTr, ParentOp, MaxDepth-1);
 
-    Transform = CombineTransform(Target->RenderTransform, ParentTr);
-    Opacity = Target->GetRenderOpacity() * ParentOp;
+    TSharedPtr<SWidget> ParentWidget = Target->GetCachedWidget();
+    FSlateRenderTransform CurrTr = {};
+    float CurrOp = 1.0f;
+    int HierarchyDepth = MaxDepth;
+
+    while (ParentWidget && HierarchyDepth > 0)
+    {
+        CurrTr = CurrTr.Concatenate(ParentWidget->GetRenderTransform().Get({}));
+        CurrOp *= ParentWidget->GetRenderOpacity();
+
+        auto WeakParent = ParentWidget->GetPersistentState().PaintParent;
+        if(WeakParent.IsValid())
+            ParentWidget = WeakParent.Pin();
+        else ParentWidget.Reset();
+
+        HierarchyDepth--;
+    }
+
+    Transform = FWidgetTransform(
+        CurrTr.GetTranslation(),
+        CurrTr.GetMatrix().GetScale().GetVector(),
+        {0,0},
+        CurrTr.GetMatrix().GetRotationAngle()
+    );
+    Opacity = CurrOp;
 }
 
 void UBlueWindowBPLibrary::DrawLinesThick(

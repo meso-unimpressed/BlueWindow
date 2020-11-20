@@ -133,8 +133,17 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
     static FWidgetTransform InverseTransform(FWidgetTransform Input);
 
     /*
-     * Get all the transformations which influence the look of the target widget
-     * It is a recursive operation, keep max-depth as low as possible
+     * Get all the combined transformations and opacity which might
+     * influence the look of the target widget.
+     *
+     * It is a recursive operation, keep max-depth as low as possible,
+     * 100 should be enough for all sane situations
+     *
+     * Shear is not supported because this function uses Slate widgets instead of UMG
+     * and their transformation is stored as proper 2x2 matrix + translation
+     * while UMG widgets' transformation is stored as individual components (I despise that decision :P).
+     * Until I figure out how to extract shear information from 2x2 matrix,
+     * shearing remains unsupported, and yields undefined behavior.
      */
     UFUNCTION(BlueprintPure, Category = "Widgets")
     static void GetAccumulatedWidgetRender(UWidget* Target, FWidgetTransform& Transform, float& Opacity, int MaxDepth = 100);
