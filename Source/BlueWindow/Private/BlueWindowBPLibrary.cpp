@@ -163,8 +163,8 @@ bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVect
 FWidgetTransform UBlueWindowBPLibrary::CombineTransform(FWidgetTransform LHS, FWidgetTransform RHS)
 {
     return FWidgetTransform(
-        ::Concatenate(LHS.Translation, RHS.Translation),
-        ::Concatenate(FScale2D(LHS.Scale), FScale2D(RHS.Scale)).GetVector(),
+        LHS.Translation + RHS.Translation,
+        LHS.Scale * RHS.Scale,
         FShear2D::FromShearAngles(LHS.Shear + RHS.Shear).GetVector(),
         LHS.Angle + RHS.Angle
     );

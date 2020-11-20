@@ -88,6 +88,28 @@ UTexture* UInteractiveRetainerBox::GetTexture()
 	return res;
 }
 
+void UInteractiveRetainerBox::ResetContentTransform()
+{
+	if(!GetContentSlot()) return;
+
+	TWeakPtr<SWidget> ParentWidget = MyRetainerWidget;
+	FSlateRenderTransform CurrTr = {};
+	float CurrOp = 1.0f;
+	int HierarchyDepth = 100;
+
+    while (ParentWidget.IsValid() && HierarchyDepth > 0)
+    {
+        CurrTr = CurrTr.Concatenate(ParentWidget.Pin()->GetRenderTransform().Get({}));
+		CurrOp *= ParentWidget.Pin()->GetRenderOpacity();
+		ParentWidget = ParentWidget.Pin()->GetPersistentState().PaintParent;
+		HierarchyDepth--;
+    }
+
+	auto content = GetContentSlot()->Content->TakeWidget();
+	content->SetRenderTransform(CurrTr.Inverse());
+	content->SetRenderOpacity(1/FMath::Max(CurrOp, 0.01f));
+}
+
 void UInteractiveRetainerBox::ReleaseSlateResources(bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
@@ -107,12 +129,12 @@ TSharedRef<SWidget> UInteractiveRetainerBox::RebuildWidget()
 		.StatId( FName( *FString::Printf(TEXT("%s [%s]"), *GetFName().ToString(), *GetClass()->GetName() ) ) )
 #endif//STATS
 		;
-
 	MyRetainerWidget->SetRetainedRendering(PreviewInDesignTime);
 	
 	if ( GetChildrenCount() > 0 )
 	{
 		MyRetainerWidget->SetContent(GetContentSlot()->Content ? GetContentSlot()->Content->TakeWidget() : SNullWidget::NullWidget);
+		ResetContentTransform();
 	}
 	
 	return MyRetainerWidget.ToSharedRef();
@@ -126,6 +148,7 @@ void UInteractiveRetainerBox::SynchronizeProperties()
 	MyRetainerWidget->SetTextureParameter(TextureParameter);
 	MyRetainerWidget->SetWorld(GetWorld());
 	MyRetainerWidget->SetRetainedRendering(PreviewInDesignTime);
+	ResetContentTransform();
 }
 
 void UInteractiveRetainerBox::OnSlotAdded(UPanelSlot* InSlot)
@@ -134,6 +157,7 @@ void UInteractiveRetainerBox::OnSlotAdded(UPanelSlot* InSlot)
 	if ( MyRetainerWidget.IsValid() )
 	{
 		MyRetainerWidget->SetContent(InSlot->Content ? InSlot->Content->TakeWidget() : SNullWidget::NullWidget);
+		ResetContentTransform();
 	}
 }
 
@@ -157,6 +181,7 @@ void UInteractiveRetainerBox::PostEditChangeProperty(FPropertyChangedEvent& Prop
 {
 	RebuildWidget();
     InvalidateLayoutAndVolatility();
+	ResetContentTransform();
 }
 
 #endif
