@@ -4,7 +4,10 @@
 #include "BlueWindow.h"
 #include "CoreMinimal.h"
 #include "Rendering/DrawElements.h"
+#include "Math/TransformCalculus2D.h"
 #include <limits>
+
+#include "PanelWidget.h"
 
 UBlueWindowBPLibrary::UBlueWindowBPLibrary(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -157,8 +160,48 @@ bool UBlueWindowBPLibrary::LineTraceFiltered(UWorld* World, FVector Start, FVect
     return LineTraceFiltered_Internal(World, Start, End, Filter, OutHits, FirstHit);
 }
 
-FWidgetTransform UBlueWindowBPLibrary::GetAccumulatedWidgetTransform(UWidget* Target, int MaxDepth)
+FWidgetTransform UBlueWindowBPLibrary::CombineTransform(FWidgetTransform LHS, FWidgetTransform RHS)
 {
+    return FWidgetTransform(
+        ::Concatenate(LHS.Translation, RHS.Translation),
+        ::Concatenate(FScale2D(LHS.Scale), FScale2D(RHS.Scale)).GetVector(),
+        FShear2D::FromShearAngles(LHS.Shear + RHS.Shear).GetVector(),
+        LHS.Angle + RHS.Angle
+    );
+}
+
+FWidgetTransform UBlueWindowBPLibrary::InverseTransform(FWidgetTransform Input)
+{
+    return FWidgetTransform(
+        -Input.Translation,
+        Input.Scale.Size() == 0.0f ?
+            FVector2D(1, 1) :
+            FVector2D(1.0f / Input.Scale.X, 1.0f / Input.Scale.Y),
+        - Input.Shear,
+        - Input.Angle
+    );
+}
+
+void UBlueWindowBPLibrary::GetAccumulatedWidgetRender(UWidget* Target, FWidgetTransform& Transform, float& Opacity, int MaxDepth)
+{
+    if(!Target)
+    {
+        Transform = {};
+        Opacity = 1.0;
+        return;
+    }
+    if(MaxDepth <= 0 || !Target->GetParent())
+    {
+        Transform = Target->RenderTransform;
+        Opacity = Target->GetRenderOpacity();
+        return;
+    }
+    FWidgetTransform ParentTr;
+    float ParentOp;
+    GetAccumulatedWidgetRender(Target->GetParent(), ParentTr, ParentOp, MaxDepth-1);
+
+    Transform = CombineTransform(Target->RenderTransform, ParentTr);
+    Opacity = Target->GetRenderOpacity() * ParentOp;
 }
 
 void UBlueWindowBPLibrary::DrawLinesThick(
