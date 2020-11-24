@@ -2,23 +2,21 @@
 
 #pragma once
 
-
-#if PLATFORM_WINDOWS
-#include "Windows/AllowWindowsPlatformTypes.h"
-#endif
-#include <d3d11.h>
-#include <d3d12.h>
-#if PLATFORM_WINDOWS
-#include "Windows/HideWindowsPlatformTypes.h"
-#endif
-
 #include "CoreMinimal.h"
 
-#include <dxgi1_2.h>
-
-#include "Engine/Texture2D.h"
+class FD3D12CommandContext;
 
 #include "SharedTextureReceiver.generated.h"
+
+struct ID3D12Device;
+struct ID3D12CommandAllocator;
+struct ID3D12GraphicsCommandList;
+struct ID3D12Resource;
+
+struct ID3D11Device;
+struct ID3D11Texture2D;
+struct ID3D11DeviceContext;
+class UTexture2D;
 
 UENUM(BlueprintType)
 enum class ESharedPixelFormat : uint8
@@ -100,14 +98,15 @@ class BLUEWINDOW_API USharedTextureReceiver : public UObject
 	GENERATED_BODY()
 private:
 	//DX12 resources
-	IDXGIResource1* sharedResource;
 	ID3D12Device* D3D12Device = nullptr;
+	ID3D12CommandAllocator* D3D12CommandAllocator = nullptr;
+	ID3D12GraphicsCommandList* D3D12GraphicsCommandList = nullptr;
+	ID3D12Resource* D3D12SharedTexture = nullptr;
 
 	//DX11 resource
 	ID3D11Device* D3D11Device = nullptr;
-	ID3D11Texture2D* sharedTexture = nullptr;
-	ID3D11DeviceContext* pImmediateContext = nullptr;
-	//ID3D11ShaderResourceView* sharedResourceView = nullptr;
+	ID3D11Texture2D* D3D11SharedTexture = nullptr;
+	ID3D11DeviceContext* D3D11ImmediateContext = nullptr;
 
 	FString currRHI;
 
@@ -116,7 +115,9 @@ private:
 
 	int64 Handle_;
 
-	bool failuer_;
+	bool failure_;
+
+	void CreateD3D12CommandList();
 
 public:
 

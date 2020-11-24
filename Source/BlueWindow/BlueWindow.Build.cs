@@ -51,10 +51,10 @@ public class BlueWindow : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
             {
-                "RHI",
                 "Slate",
                 "SlateCore",
                 "RenderCore",
+                "D3D12RHI",
                 "UMG",
             }
 		);
@@ -76,6 +76,13 @@ public class BlueWindow : ModuleRules
                     "SlateRHIRenderer",
                 }
             );
+        }
+
+        if (Target.Platform.IsInGroup(UnrealPlatformGroup.Windows) ||
+            Target.Platform == UnrealTargetPlatform.HoloLens)
+        {
+            AddEngineThirdPartyPrivateStaticDependencies(Target, "DX12");
+            AddEngineThirdPartyPrivateStaticDependencies(Target, "DX11");
         }
 
         DynamicallyLoadedModuleNames.AddRange(
