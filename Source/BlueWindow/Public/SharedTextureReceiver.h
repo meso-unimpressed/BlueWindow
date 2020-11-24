@@ -4,30 +4,10 @@
 
 #include "CoreMinimal.h"
 
-#if PLATFORM_WINDOWS
-#include "Windows/AllowWindowsPlatformTypes.h"
-#endif
-#include <wrl/client.h>
-#if PLATFORM_WINDOWS
-#include "Windows/HideWindowsPlatformTypes.h"
-#endif
-
-using namespace Microsoft::WRL;
-
 class FD3D12CommandContext;
 
 #include "SharedTextureReceiver.generated.h"
 
-struct ID3D12Device;
-struct ID3D12CommandQueue;
-struct ID3D12CommandAllocator;
-struct ID3D12GraphicsCommandList;
-struct ID3D12Resource;
-struct ID3D12Fence;
-
-struct ID3D11Device;
-struct ID3D11Texture2D;
-struct ID3D11DeviceContext;
 class UTexture2D;
 
 UENUM(BlueprintType)
@@ -104,36 +84,28 @@ enum class ESharedPixelFormat : uint8
 	SPF_MAX = 68
 };
 
+class FSharedTextureDetail
+{
+public:
+    virtual ~FSharedTextureDetail() = default;
+    virtual void Initialize(int Width, int Height, int64 Handle, ESharedPixelFormat Format = ESharedPixelFormat::SPF_R8G8B8A8) = 0;
+	virtual void Update(int Width, int Height, int64 Handle, ESharedPixelFormat Format = ESharedPixelFormat::SPF_R8G8B8A8) = 0;
+	virtual void Render(UTexture2D* DstTexture) = 0;
+	bool Failure;
+};
+
 UCLASS(BlueprintType)
 class BLUEWINDOW_API USharedTextureReceiver : public UObject
 {
 	GENERATED_BODY()
 private:
-	//DX12 resources
-    ID3D12Device* D3D12Device;
-	ComPtr<ID3D12CommandQueue> D3D12CmdQueue;
-	ComPtr<ID3D12CommandAllocator> D3D12CmdAllocator;
-	ComPtr<ID3D12GraphicsCommandList> D3D12GfxCmdList;
-	ComPtr<ID3D12Resource> D3D12SharedTexture;
-
-	//UINT m_frameIndex;
-	HANDLE FenceEvent;
-	uint64 FenceValue;
-	ComPtr<ID3D12Fence> D3D12Fence;
-
-	//DX11 resource
-	ID3D11Device* D3D11Device;
-	ID3D11DeviceContext* D3D11ImmediateContext;
-	ComPtr<ID3D11Texture2D> D3D11SharedTexture;
-
-	FString currRHI;
 
 	UPROPERTY(Transient)
 	UTexture2D* DstTexture;
 
 	int64 Handle_;
-
-	bool failure_;
+	FString CurrentRHI;
+	TSharedPtr<FSharedTextureDetail> Detail;
 
 public:
 
