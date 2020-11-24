@@ -4,14 +4,26 @@
 
 #include "CoreMinimal.h"
 
+#if PLATFORM_WINDOWS
+#include "Windows/AllowWindowsPlatformTypes.h"
+#endif
+#include <wrl/client.h>
+#if PLATFORM_WINDOWS
+#include "Windows/HideWindowsPlatformTypes.h"
+#endif
+
+using namespace Microsoft::WRL;
+
 class FD3D12CommandContext;
 
 #include "SharedTextureReceiver.generated.h"
 
 struct ID3D12Device;
+struct ID3D12CommandQueue;
 struct ID3D12CommandAllocator;
 struct ID3D12GraphicsCommandList;
 struct ID3D12Resource;
+struct ID3D12Fence;
 
 struct ID3D11Device;
 struct ID3D11Texture2D;
@@ -98,15 +110,21 @@ class BLUEWINDOW_API USharedTextureReceiver : public UObject
 	GENERATED_BODY()
 private:
 	//DX12 resources
-	ID3D12Device* D3D12Device = nullptr;
-	ID3D12CommandAllocator* D3D12CommandAllocator = nullptr;
-	ID3D12GraphicsCommandList* D3D12GraphicsCommandList = nullptr;
-	ID3D12Resource* D3D12SharedTexture = nullptr;
+    ID3D12Device* D3D12Device;
+	ComPtr<ID3D12CommandQueue> D3D12CmdQueue;
+	ComPtr<ID3D12CommandAllocator> D3D12CmdAllocator;
+	ComPtr<ID3D12GraphicsCommandList> D3D12GfxCmdList;
+	ComPtr<ID3D12Resource> D3D12SharedTexture;
+
+	//UINT m_frameIndex;
+	HANDLE FenceEvent;
+	uint64 FenceValue;
+	ComPtr<ID3D12Fence> D3D12Fence;
 
 	//DX11 resource
-	ID3D11Device* D3D11Device = nullptr;
-	ID3D11Texture2D* D3D11SharedTexture = nullptr;
-	ID3D11DeviceContext* D3D11ImmediateContext = nullptr;
+	ID3D11Device* D3D11Device;
+	ID3D11DeviceContext* D3D11ImmediateContext;
+	ComPtr<ID3D11Texture2D> D3D11SharedTexture;
 
 	FString currRHI;
 
@@ -116,8 +134,6 @@ private:
 	int64 Handle_;
 
 	bool failure_;
-
-	void CreateD3D12CommandList();
 
 public:
 
