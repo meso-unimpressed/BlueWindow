@@ -3,6 +3,7 @@
 
 #define USE_RHI_GFXCMDLIST 0
 #define BLOCK_RENDER_THREAD_UNTIL_COPY_IS_COMPLETE 1
+#define DUPLICATE_NTHANDLE 0
 
 #if USE_RHI_GFXCMDLIST
 #include "D3D12RHI/Private/D3D12CommandContext.h"
@@ -26,7 +27,7 @@
 using namespace Microsoft::WRL;
 
 #define RECEIVER_FAIL(m) UE_LOG(LogTemp, Error, TEXT(m)); failure_ = true; return
-#define HRESULT_FAIL(hrs, m) if(FAILED(hrs)) { UE_LOG(LogTemp, Error, TEXT(m)); UE_LOG(LogTemp, Error, TEXT("HRESULT is %s"), hrs); Failure = true; return; }
+#define HRESULT_FAIL(hrs, m) if(FAILED(hrs)) { UE_LOG(LogTemp, Error, TEXT(m)); Failure = true; return; }
 
 class FD3D11SharedTextureDetail : public FSharedTextureDetail
 {
@@ -88,6 +89,7 @@ private:
 	ComPtr<ID3D12Resource> SharedTexture;
 
 	HANDLE FenceEvent = nullptr;
+	HANDLE NtHandleDuplicate = 0;
 	uint64 FenceValue = 0;
 	ComPtr<ID3D12Fence> D3D12Fence;
 
@@ -95,6 +97,7 @@ public:
 	virtual void Initialize(int Width, int Height, int64 Handle, ESharedPixelFormat Format) override;
 	virtual void Update(int Width, int Height, int64 Handle, ESharedPixelFormat Format) override;
 	virtual void Render(UTexture2D* DstTexture) override;
+	~FD3D12SharedTextureDetail();
 };
 
 void FD3D12SharedTextureDetail::Initialize(int Width, int Height, int64 Handle, ESharedPixelFormat Format)
@@ -140,8 +143,31 @@ void FD3D12SharedTextureDetail::Update(int Width, int Height, int64 Handle, ESha
 {
 	Failure = false;
 	SharedTexture.Reset();
+
+#if DUPLICATE_NTHANDLE
+    if (NtHandleDuplicate) CloseHandle(NtHandleDuplicate);
+	if (!DuplicateHandle(
+		GetCurrentProcess(),
+		reinterpret_cast<HANDLE>(Handle),
+		GetCurrentProcess(),
+		&NtHandleDuplicate,
+		0,
+		false,
+		DUPLICATE_SAME_ACCESS
+	))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to duplicate incoming NTHANDLE"));
+		Failure = true;
+	    return;
+	}
+#endif
+
 	auto hres = Device->OpenSharedHandle(
-		reinterpret_cast<HANDLE>(static_cast<uint64>(Handle)),
+#if DUPLICATE_NTHANDLE
+		NtHandleDuplicate,
+#else
+		reinterpret_cast<HANDLE>(Handle),
+#endif
 		IID_PPV_ARGS(&SharedTexture)
 	);
 
@@ -189,6 +215,13 @@ void FD3D12SharedTextureDetail::Render(UTexture2D* DstTexture)
 #endif
 #endif
 	});
+}
+
+FD3D12SharedTextureDetail::~FD3D12SharedTextureDetail()
+{
+#if DUPLICATE_NTHANDLE
+	if (NtHandleDuplicate) CloseHandle(NtHandleDuplicate);
+#endif
 }
 
 void USharedTextureReceiver::Initialize(int Width, int Height, int64 Handle, ESharedPixelFormat Format)
