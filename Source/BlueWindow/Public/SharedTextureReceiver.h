@@ -89,7 +89,7 @@ class FSharedTextureDetail
 public:
     virtual ~FSharedTextureDetail() = default;
     virtual void Initialize(int Width, int Height, int64 Handle, ESharedPixelFormat Format = ESharedPixelFormat::SPF_R8G8B8A8) = 0;
-	virtual void Update(int Width, int Height, int64 Handle, ESharedPixelFormat Format = ESharedPixelFormat::SPF_R8G8B8A8) = 0;
+	virtual void Update(UTexture2D* DstTexture, int Width, int Height, int64 Handle, ESharedPixelFormat Format = ESharedPixelFormat::SPF_R8G8B8A8) = 0;
 	virtual void Render(UTexture2D* DstTexture) = 0;
 	bool Failure;
 };
