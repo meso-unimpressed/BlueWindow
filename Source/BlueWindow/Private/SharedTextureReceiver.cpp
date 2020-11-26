@@ -1,11 +1,13 @@
 
 #include "SharedTextureReceiver.h"
 
-#define USE_RHI_GFXCMDLIST 0
+#define USE_RHI_GFXCMDLIST 1
+#define USE_D3D11_ON_D3D12 0
 #define BLOCK_RENDER_THREAD_UNTIL_COPY_IS_COMPLETE 1
 
 #if USE_RHI_GFXCMDLIST
-#include "D3D12RHI/Private/D3D12CommandContext.h"
+#define NV_AFTERMATH 0
+#include "D3D12RHI/Private/D3D12RHIPrivate.h"
 #endif
 
 #include "Engine/Texture2D.h"
@@ -16,7 +18,11 @@
 #include <d3d11.h>
 #include <d3d12.h>
 #include <dxgi1_2.h>
+
+#if USE_D3D11_ON_D3D12
 #include <d3d11on12.h>
+#endif
+
 #include <wrl/client.h>
 #if PLATFORM_WINDOWS
 #include "Windows/HideWindowsPlatformTypes.h"
@@ -92,7 +98,6 @@ protected:
 	ComPtr<ID3D12Resource> SharedTexture;
 
 	HANDLE FenceEvent = nullptr;
-	HANDLE NtHandleDuplicate = 0;
 	uint64 FenceValue = 0;
 	ComPtr<ID3D12Fence> D3D12Fence;
 
@@ -170,8 +175,8 @@ void FD3D12SharedTextureDetail::Render(UTexture2D* DstTexture)
 		FD3D12CommandContext& CmdCtx =
 			static_cast<FD3D12CommandContext&>(RHICmdList.GetContext());
 
-		ID3D12GraphicsCommandList* GfxCmdList = CmdCtx.CommandListHandle.GraphicsCommandList();
-		GfxCmdList->CopyResource(dstResNative, D3D12SharedTexture);
+		ID3D12GraphicsCommandList* pGfxCmdList = CmdCtx.CommandListHandle.GraphicsCommandList();
+		pGfxCmdList->CopyResource(dstResNative, SharedTexture.Get());
 #else
 		uint64 tempFence = FenceValue;
 #if !BLOCK_RENDER_THREAD_UNTIL_COPY_IS_COMPLETE
@@ -203,13 +208,11 @@ void FD3D12SharedTextureDetail::Render(UTexture2D* DstTexture)
 
 FD3D12SharedTextureDetail::~FD3D12SharedTextureDetail()
 {
-#if DUPLICATE_NTHANDLE
-	if (NtHandleDuplicate) CloseHandle(NtHandleDuplicate);
-#endif
 }
 #pragma endregion DX12
 
 #pragma region DX11 on DX12
+#if USE_D3D11_ON_D3D12
 class FD3D11OnD3D12SharedTextureDetail : FD3D12SharedTextureDetail
 {
 protected:
@@ -312,6 +315,7 @@ void FD3D11OnD3D12SharedTextureDetail::Render(UTexture2D* DstTexture)
 #endif
 	});
 }
+#endif
 #pragma endregion DX11 on DX12
 
 void USharedTextureReceiver::Initialize(int Width, int Height, int64 Handle, ESharedPixelFormat Format)
