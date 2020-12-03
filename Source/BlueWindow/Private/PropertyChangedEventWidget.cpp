@@ -72,6 +72,7 @@ void UPropertyChangedEventWidget::OnDesignerChanged(const FDesignerChangedEventA
 bool UPropertyChangedEventWidget::Initialize()
 {
 	Super::Initialize();
+	if (!GUnrealEd) return true;
 	if (!GUnrealEd->OnPostEditorTick().IsBoundToObject(this))
 		EditorTickHandle = GUnrealEd->OnPostEditorTick().AddUObject(this, &UPropertyChangedEventWidget::NotifyOnEditorTick);
 	return true;
@@ -81,6 +82,7 @@ void UPropertyChangedEventWidget::BeginDestroy()
 {
 	Super::BeginDestroy();
 
+	if (!GUnrealEd) return;
 	if (GUnrealEd->OnPostEditorTick().IsBoundToObject(this))
 	{
 		GUnrealEd->OnPostEditorTick().Remove(EditorTickHandle);
