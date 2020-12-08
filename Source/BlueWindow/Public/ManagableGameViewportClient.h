@@ -89,6 +89,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "BlueWindow")
 		UInputProcessorCollection* GlobalInputProcessors;
 
+	UPROPERTY(BlueprintReadWrite, Category = "BlueWindow")
+		UGlobalInputProcessor* MainGlobalInput;
+
 	UFUNCTION(BlueprintCallable, Category = "BlueWindow")
 		void AddInputTargetWidget(UUserWidget* widget);
 
@@ -97,10 +100,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+    virtual void MouseMove(FViewport* InViewport, int32 X, int32 Y) override;
 
-	void MouseMove(FViewport* InViewport, int32 X, int32 Y) override;
-
-	void Activated(FViewport* InViewport, const FWindowActivateEvent& InActivateEvent) override;
+    virtual void Activated(FViewport* InViewport, const FWindowActivateEvent& InActivateEvent) override;
 
 	FGeometry GetGeometry();
 };

@@ -78,6 +78,8 @@ void UManagableGameViewportClient::Init(struct FWorldContext& WorldContext, UGam
 {
 	UGameViewportClient::Init(WorldContext, OwningGameInstance, bCreateNewAudioDevice);
 	GlobalInputProcessors = NewObject<UInputProcessorCollection>(this);
+	MainGlobalInput = NewObject<UGlobalInputProcessor>(this);
+	GlobalInputProcessors->Map.Add(TEXT("MainViewPort"), MainGlobalInput);
 
 	//currRHI = FHardwareInfo::GetHardwareInfo(NAME_RHI);
 	//if (currRHI.Equals("D3D11"))

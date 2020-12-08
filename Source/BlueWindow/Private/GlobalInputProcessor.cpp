@@ -74,7 +74,13 @@ DECL_TOUCHEVENT(OnTouchForceChanged)
 DECL_TOUCHEVENT(OnTouchEnded)
 DECL_TOUCHEVENT(OnMouseButtonDown)
 DECL_TOUCHEVENT(OnMouseButtonUp)
-DECL_TOUCHEVENT(OnMouseMove)
+
+void UGlobalInputProcessor::OnMouseMove_Implementation(FGeometry geometry, FPointerEvent pointerEvent)
+{
+    for (UUserWidget* tunnelto : TunnelToWidgets)
+	    tunnelto->OnMouseMove(tunnelto->GetCachedGeometry(), pointerEvent);
+    OnMouseMoveEvent.Broadcast(geometry, pointerEvent);
+}
 
 void UGlobalInputProcessor::AddTargetWidget(UUserWidget* widget)
 {
