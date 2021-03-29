@@ -243,12 +243,24 @@ void UManagableGameViewportClient::Tick(float DeltaTime)
 	//GEngine->GameViewport->GetGameViewport()->UpdateRenderTargetSurfaceRHIToCurrentBackBuffer();
 
 	auto currRHI = FHardwareInfo::GetHardwareInfo(NAME_RHI);
-	auto RhiVpTex = Viewport->GetRenderTargetTexture();
+	auto VpTex = Viewport->GetRenderTargetTexture();
 
-	// TODO: investigate why it doesn't want to work on DX12
-	ENQUEUE_RENDER_COMMAND(void)([this, vps, RhiVpTex](FRHICommandListImmediate& RHICmdList)
+	ENQUEUE_RENDER_COMMAND(void)([this, vps, VpTex](FRHICommandListImmediate& RHICmdList)
 	{
 		if (!Viewport) return;
+
+		auto RhiVpTex = VpTex;
+		auto RhiVp = Viewport->GetViewportRHI();
+
+		if(!RhiVpTex)
+		{
+			RhiVpTex = RHICmdList.GetViewportBackBuffer(RhiVp);
+			if(!RhiVpTex)
+			{
+				RHIAdvanceFrameForGetViewportBackBuffer(RhiVp);
+				RhiVpTex = RHICmdList.GetViewportBackBuffer(RhiVp);
+			}
+		}
 
 		if (!ViewportCopy)
 		{
