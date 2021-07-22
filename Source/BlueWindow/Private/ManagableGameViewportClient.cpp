@@ -11,6 +11,7 @@
 #include "GlobalInputProcessor.h"
 #include "PixelstreamingManager.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Rendering/Texture2DResource.h"
 
 //#if PLATFORM_WINDOWS && !defined(WINDOWS_PLATFORM_TYPES_GUARD)
 //#include "AllowWindowsPlatformTypes.h"

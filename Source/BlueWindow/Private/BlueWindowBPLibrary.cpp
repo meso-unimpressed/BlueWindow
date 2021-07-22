@@ -7,8 +7,6 @@
 #include "Math/TransformCalculus2D.h"
 #include <limits>
 
-#include "PanelWidget.h"
-
 UBlueWindowBPLibrary::UBlueWindowBPLibrary(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 

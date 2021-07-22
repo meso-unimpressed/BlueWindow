@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 
-#include "Events.h"
 #include "InputCoreTypes.h"
 #include "Engine/EngineTypes.h"
 

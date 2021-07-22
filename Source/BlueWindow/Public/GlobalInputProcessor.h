@@ -2,10 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Events.h"
-#include "Geometry.h"
 #include "UObject/Interface.h"
-
 #include "GlobalInputProcessor.generated.h"
 
 class UUserWidget;

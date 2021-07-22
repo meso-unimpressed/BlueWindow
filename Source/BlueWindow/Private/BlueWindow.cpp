@@ -3,7 +3,7 @@
 #include "BlueWindow.h"
 
 
-#include "CommandLine.h"
+#include "Misc/CommandLine.h"
 #include "PixelstreamingManager.h"
 
 #define LOCTEXT_NAMESPACE "FBlueWindowModule"

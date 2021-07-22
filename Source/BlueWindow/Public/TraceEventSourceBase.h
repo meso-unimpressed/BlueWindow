@@ -4,7 +4,6 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "InputCoreTypes.h"
-#include "Events.h"
 #include "Engine/EngineTypes.h"
 
 #include <tuple>

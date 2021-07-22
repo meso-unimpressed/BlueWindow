@@ -3,9 +3,8 @@
 
 #include "PropertyChangedEventWidget.h"
 
-#include "PropertyBinding.h"
-#include "UMGSequencePlayer.h"
 #include "MovieSceneTimeHelpers.h"
+#include "Animation/UMGSequencePlayer.h"
 
 #include "UObject/UnrealType.h"
 
@@ -108,7 +107,8 @@ void UPropertyChangedEventWidget::JumpToTime(UWidgetAnimation* Animation, float 
 
 	if (!Player->GetEvaluationTemplate().IsValid() && bPrimeSession)
 	{
-		Player->GetEvaluationTemplate().Initialize(*Animation, *Player);
+		//TODO: Check if nullptr for Data Manager is really valid
+		Player->GetEvaluationTemplate().Initialize(*Animation, *Player, nullptr);
 	}
 	if(Player->GetEvaluationTemplate().IsValid())
 	{
@@ -116,7 +116,7 @@ void UPropertyChangedEventWidget::JumpToTime(UWidgetAnimation* Animation, float 
 		float duration = 1;
 		if(bNormalizeDuration)
 		{
-		    auto durFrame = MovieScene::DiscreteSize(Animation->GetMovieScene()->GetPlaybackRange());
+		    auto durFrame = UE::MovieScene::DiscreteSize(Animation->GetMovieScene()->GetPlaybackRange());
 			duration = AnimRes.AsSeconds(durFrame);
 		}
 
