@@ -1,11 +1,13 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "BlueWindowBPLibrary.h"
-#include "BlueWindow.h"
-#include "CoreMinimal.h"
+
 #include "Rendering/DrawElements.h"
 #include "Math/TransformCalculus2D.h"
-#include <limits>
+
+#if PLATFORM_WINDOWS
+#include "Windows/WindowsWindow.h"
+#endif
 
 UBlueWindowBPLibrary::UBlueWindowBPLibrary(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -125,7 +127,7 @@ bool LineTraceFiltered_Internal(UWorld* World, FVector Start, FVector End, TFilt
 
     FirstHit = FHitResult();
 
-    float mindist = std::numeric_limits<float>::max();
+    float mindist = MAX_flt;
 
     World->LineTraceMultiByObjectType(
         tempHits, Start, End,
@@ -214,6 +216,65 @@ void UBlueWindowBPLibrary::GetAccumulatedWidgetRender(UWidget* Target, FWidgetTr
         CurrTr.GetMatrix().GetRotationAngle()
     );
     Opacity = CurrOp;
+}
+
+void UBlueWindowBPLibrary::SetFocusToGameWindow(bool EnableCapture)
+{
+#if PLATFORM_WINDOWS
+    const Windows::HWND WindowHandle = GetTopWindow(NULL);
+    SetFocus(WindowHandle);
+    SetCapture(WindowHandle);
+#endif
+}
+
+Windows::HWND FindTopmostHwnd(Windows::HWND WindowHandle)
+{
+    Windows::HWND TopMostParent = WindowHandle;
+    while (GetParent(TopMostParent) != nullptr)
+    {
+        TopMostParent = GetParent(TopMostParent);
+    }
+    return TopMostParent;
+}
+
+void UBlueWindowBPLibrary::MoveViewportWindowToZ(UObject* WorldContextObject, EWindowOrder WindowOrder)
+{
+    if (!WorldContextObject->IsValidLowLevel()) return;
+    
+#if PLATFORM_WINDOWS
+    const Windows::HWND WindowHandle = (HWND)WorldContextObject->GetWorld()->GetGameViewport()->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+    switch (WindowOrder)
+    {
+    case BOTTOM:
+        SetWindowPos(WindowHandle,
+            HWND_BOTTOM,
+            0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE);
+        break;
+    case NOTOPMOST:
+        SetWindowPos(WindowHandle,
+            HWND_NOTOPMOST,
+            0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE);
+        break;
+    case TOP:
+        SetWindowPos(WindowHandle,
+        HWND_TOP,
+        0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetForegroundWindow(WindowHandle);
+        SetCapture(WindowHandle);
+        break;
+    case TOPMOST:
+        SetWindowPos(WindowHandle,
+        HWND_TOPMOST,
+        0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetForegroundWindow(WindowHandle);
+        SetCapture(WindowHandle);
+        break;
+    }
+#endif
 }
 
 void UBlueWindowBPLibrary::DrawLinesThick(
