@@ -251,23 +251,9 @@ void UBlueWindowBPLibrary::MoveViewportWindowToZ(UObject* WorldContextObject, EW
             0, 0, 0, 0,
             SWP_NOMOVE | SWP_NOSIZE);
         break;
-    case NOTOPMOST:
-        SetWindowPos(WindowHandle,
-            HWND_NOTOPMOST,
-            0, 0, 0, 0,
-            SWP_NOMOVE | SWP_NOSIZE);
-        break;
     case TOP:
         SetWindowPos(WindowHandle,
         HWND_TOP,
-        0, 0, 0, 0,
-            SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-        SetForegroundWindow(WindowHandle);
-        SetCapture(WindowHandle);
-        break;
-    case TOPMOST:
-        SetWindowPos(WindowHandle,
-        HWND_TOPMOST,
         0, 0, 0, 0,
             SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         SetForegroundWindow(WindowHandle);
