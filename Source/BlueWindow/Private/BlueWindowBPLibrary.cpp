@@ -4,6 +4,7 @@
 
 #include "Rendering/DrawElements.h"
 #include "Math/TransformCalculus2D.h"
+#include "Widgets/SWindow.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsWindow.h"
