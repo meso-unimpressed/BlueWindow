@@ -159,12 +159,15 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
     UFUNCTION(BlueprintPure, Category = "Widgets")
     static void GetAccumulatedWidgetRender(UWidget* Target, FWidgetTransform& Transform, float& Opacity, int MaxDepth = 100);
 
-	UFUNCTION(BlueprintCallable, Category = "Window")
-	static void SetFocusToGameWindow(bool EnableCapture = true);
+	UFUNCTION(BlueprintCallable, Category = "Window", meta = (WorldContext = WorldContextObject))
+	static void SetFocusToGameWindow(UObject* WorldContextObject, bool EnableCapture = true);
 	
 	/*
 	* Move OS window to specific Z.
 	*/
     UFUNCTION(BlueprintCallable, Category = "Window", meta = (WorldContext = WorldContextObject))
 	static void MoveViewportWindowToZ(UObject* WorldContextObject, EWindowOrder WindowOrder = TOP);
+	
+	UFUNCTION(BlueprintCallable, Category = "Window", meta = (WorldContext = WorldContextObject))
+	static void MakeViewportActiveWindow(UObject* WorldContextObject, bool SetFocus = true);
 };

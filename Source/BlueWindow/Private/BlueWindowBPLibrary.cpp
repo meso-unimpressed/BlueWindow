@@ -219,12 +219,38 @@ void UBlueWindowBPLibrary::GetAccumulatedWidgetRender(UWidget* Target, FWidgetTr
     Opacity = CurrOp;
 }
 
-void UBlueWindowBPLibrary::SetFocusToGameWindow(bool EnableCapture)
+void UBlueWindowBPLibrary::SetFocusToGameWindow(UObject* WorldContextObject,bool EnableCapture)
 {
+    if (!WorldContextObject->IsValidLowLevel()) return;
+    
 #if PLATFORM_WINDOWS
-    const Windows::HWND WindowHandle = GetTopWindow(NULL);
+    const Windows::HWND WindowHandle = (HWND)WorldContextObject->GetWorld()->GetGameViewport()->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
     SetFocus(WindowHandle);
-    SetCapture(WindowHandle);
+    if (EnableCapture)
+    {
+        SetCapture(WindowHandle);
+        
+        RECT Rect;
+        GetWindowRect(WindowHandle, &Rect);
+        INPUT Input{};
+        Input.type = INPUT_MOUSE;
+        Input.mi.dwFlags = MOUSEEVENTF_MOVE|MOUSEEVENTF_ABSOLUTE;
+        const long ScreenWidth = (Rect.right - Rect.left);
+        const long ScreenHeight = (Rect.bottom - Rect.top);
+        Input.mi.dx = (Rect.left + ScreenWidth / 2) * (65535.0f/ScreenWidth);
+        Input.mi.dy = (Rect.top + ScreenHeight / 2) * (65535.0f/ScreenHeight);
+        SendInput(1,&Input,sizeof(INPUT));
+        
+        ZeroMemory(&Input,sizeof(INPUT));
+        Input.type = INPUT_MOUSE;
+        Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+        SendInput(1, &Input, sizeof(Input));
+
+        ZeroMemory(&Input,sizeof(INPUT));
+        Input.type = INPUT_MOUSE;
+        Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+        SendInput(1,&Input,sizeof(INPUT));
+    }
 #endif
 }
 
@@ -260,6 +286,22 @@ void UBlueWindowBPLibrary::MoveViewportWindowToZ(UObject* WorldContextObject, EW
         SetForegroundWindow(WindowHandle);
         SetCapture(WindowHandle);
         break;
+    }
+#endif
+}
+
+void UBlueWindowBPLibrary::MakeViewportActiveWindow(UObject* WorldContextObject, bool SetFocus)
+{
+    if (!WorldContextObject->IsValidLowLevel()) return;
+    
+#if PLATFORM_WINDOWS
+    const Windows::HWND WindowHandle = (HWND)WorldContextObject->GetWorld()->GetGameViewport()->GetWindow()->GetNativeWindow()->GetOSWindowHandle();
+    //MoveViewportWindowToZ(WorldContextObject, TOP);
+    SetForegroundWindow(WindowHandle);
+    SetActiveWindow(WindowHandle);
+    if (SetFocus)
+    {
+        SetFocusToGameWindow(WorldContextObject, true);
     }
 #endif
 }
