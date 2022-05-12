@@ -7,6 +7,7 @@
 #endif
 #include "LevelEditorViewport.h"
 #include "SEditorViewport.h"
+#include "Kismet/GameplayStatics.h"
 #include "Rendering/DrawElements.h"
 #include "Math/TransformCalculus2D.h"
 #include "Slate/SObjectWidget.h"
@@ -332,31 +333,60 @@ void UBlueWindowBPLibrary::DrawLinesThick(
         Thickness);
 }
 
+bool UBlueWindowBPLibrary::IsInEditorAndNotPlaying()
+{
+#if WITH_EDITOR
+    if (!IsInGameThread())
+    {
+        UE_LOG(LogTemp, Display, TEXT("You are not on the main thread."));
+        return false;
+    }
+    if (!GIsEditor)
+    {
+        UE_LOG(LogTemp, Display, TEXT("You are not in the Editor."));
+        return false;
+    }
+    if (GEditor->PlayWorld || GIsPlayInEditorWorld)
+    {
+        UE_LOG(LogTemp, Display, TEXT("The Editor is currently in a play mode."));
+        return false;
+    }
+    return true;
+#endif
+    return false;
+}
+
 FVector2D UBlueWindowBPLibrary::ProjectEditorWorldSpacePointToScreenSpace(FVector Point)
 {
 #if WITH_EDITOR
     if (!GEditor) return FVector2D::ZeroVector;
 
-    const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
-    if (!ViewportClient) return FVector2D::ZeroVector;
+    FVector2D ScreenPosition{};
+    if (IsInEditorAndNotPlaying())
+    {
+        const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
+        if (!ViewportClient) return FVector2D::ZeroVector;
+    
+        FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(
+            ViewportClient->Viewport,
+            ViewportClient->GetScene(),
+            ViewportClient->EngineShowFlags
+            ));
 
-    FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(
-        ViewportClient->Viewport,
-        ViewportClient->GetScene(),
-        ViewportClient->EngineShowFlags
-        ));
-
-    const auto DpiScale = ViewportClient->ShouldDPIScaleSceneCanvas() ? ViewportClient->GetDPIScale() : 1.0f;
-    const FSceneView* SceneView = ViewportClient->CalcSceneView(&ViewFamily);
+        const auto DpiScale = ViewportClient->ShouldDPIScaleSceneCanvas() ? ViewportClient->GetDPIScale() : 1.0f;
+        const FSceneView* SceneView = ViewportClient->CalcSceneView(&ViewFamily);
 	
-    const FIntRect ViewRect({0, 0}, GEditor->GetActiveViewport()->GetSizeXY());
+        const FIntRect ViewRect({0, 0}, GEditor->GetActiveViewport()->GetSizeXY());
 
-    FVector2D ScreenPosition;
-    SceneView->ProjectWorldToScreen(Point, ViewRect, SceneView->ViewMatrices.GetViewProjectionMatrix(), ScreenPosition);
-    ScreenPosition /= DpiScale;
-	
+        SceneView->ProjectWorldToScreen(Point, ViewRect, SceneView->ViewMatrices.GetViewProjectionMatrix(), ScreenPosition);
+        ScreenPosition /= DpiScale;
+    }
+    else
+    {
+        const auto PlayerController = UGameplayStatics::GetPlayerController(GEditor->GetWorld(), 0);
+        PlayerController->ProjectWorldLocationToScreen(Point, ScreenPosition);
+    }
     return ScreenPosition;
-
 #endif
     return FVector2D::ZeroVector;
 }
@@ -426,7 +456,6 @@ void UBlueWindowBPLibrary::RemoveWidgetOverlayFromEditorViewport(USlateWidgetWra
 #if WITH_EDITOR
     const auto Overlay = GetEditorViewportOverlay();
     if (!Overlay.IsValid()) return;
-    
     Overlay->RemoveSlot(Widget->Widget.ToSharedRef());
 #endif
 }

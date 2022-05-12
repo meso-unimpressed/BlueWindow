@@ -186,7 +186,9 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 	
 	UFUNCTION(BlueprintCallable, Category = "Window", meta = (WorldContext = WorldContextObject))
 	static void MakeViewportActiveWindow(UObject* WorldContextObject, bool SetFocus = true);
-
+	
+	static bool IsInEditorAndNotPlaying();
+	
 	UFUNCTION(BlueprintPure, Category = "Window|Editor")
 	static FVector2D ProjectEditorWorldSpacePointToScreenSpace(FVector Point);
 
