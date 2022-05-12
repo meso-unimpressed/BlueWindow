@@ -170,4 +170,12 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 	
 	UFUNCTION(BlueprintCallable, Category = "Window", meta = (WorldContext = WorldContextObject))
 	static void MakeViewportActiveWindow(UObject* WorldContextObject, bool SetFocus = true);
+
+	UFUNCTION(BlueprintPure, Category = "Window|Editor")
+	static FVector2D ProjectEditorWorldSpacePointToScreenSpace(FVector Point);
+
+	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
+	static void AddWidgetOverlayToEditorViewport(UWidget* Widget);
+	
+	static TSharedPtr<SWidget> GetChildWidgetOfType(TSharedPtr<SWidget> InWidget, FName InType);
 };

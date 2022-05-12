@@ -2,6 +2,11 @@
 
 #include "BlueWindowBPLibrary.h"
 
+#if WITH_EDITOR
+#include "Editor.h"
+#endif
+#include "LevelEditorViewport.h"
+#include "SEditorViewport.h"
 #include "Rendering/DrawElements.h"
 #include "Math/TransformCalculus2D.h"
 #include "Widgets/SWindow.h"
@@ -324,4 +329,66 @@ void UBlueWindowBPLibrary::DrawLinesThick(
         Tint,
         bAntiAlias,
         Thickness);
+}
+
+FVector2D UBlueWindowBPLibrary::ProjectEditorWorldSpacePointToScreenSpace(FVector Point)
+{
+#if WITH_EDITOR
+    if (!GEditor) return FVector2D::ZeroVector;
+
+    const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
+    if (!ViewportClient) return FVector2D::ZeroVector;
+
+    FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(
+        ViewportClient->Viewport,
+        ViewportClient->GetScene(),
+        ViewportClient->EngineShowFlags
+        ));
+
+    const auto DpiScale = ViewportClient->ShouldDPIScaleSceneCanvas() ? ViewportClient->GetDPIScale() : 1.0f;
+    const FSceneView* SceneView = ViewportClient->CalcSceneView(&ViewFamily);
+	
+    const FIntRect ViewRect({0, 0}, GEditor->GetActiveViewport()->GetSizeXY());
+
+    FVector2D ScreenPosition;
+    SceneView->ProjectWorldToScreen(Point, ViewRect, SceneView->ViewMatrices.GetViewProjectionMatrix(), ScreenPosition);
+    ScreenPosition /= DpiScale;
+	
+    return ScreenPosition;
+
+#endif
+    return FVector2D::ZeroVector;
+}
+
+void UBlueWindowBPLibrary::AddWidgetOverlayToEditorViewport(UWidget* Widget)
+{
+#if WITH_EDITOR
+    if (!GEditor) return;
+
+    const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
+    if (!ViewportClient) return;
+
+    auto VpRootWidget = ViewportClient->GetEditorViewportWidget();
+    auto SlateViewport = StaticCastSharedPtr<SViewport>(GetChildWidgetOfType(VpRootWidget, TEXT("SViewport")));
+    if(!SlateViewport) return;
+    auto Overlay = StaticCastSharedRef<SOverlay>(SlateViewport->GetChildren()->GetChildAt(0));
+#endif
+    
+    return;
+}
+
+TSharedPtr<SWidget> UBlueWindowBPLibrary::GetChildWidgetOfType(TSharedPtr<SWidget> InWidget, FName InType)
+{
+    if(InWidget->GetType() == InType) return InWidget;
+    auto Children = InWidget->GetChildren();
+
+    for(int i=0; i<Children->Num(); i++)
+    {
+        auto CurrChild = GetChildWidgetOfType(
+            Children->GetChildAt(i),
+            InType
+        );
+        if(CurrChild.IsValid()) return CurrChild;
+    }
+    return {};
 }
