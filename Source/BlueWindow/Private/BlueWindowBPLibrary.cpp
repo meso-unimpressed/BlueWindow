@@ -9,6 +9,7 @@
 #include "SEditorViewport.h"
 #include "Rendering/DrawElements.h"
 #include "Math/TransformCalculus2D.h"
+#include "Slate/SObjectWidget.h"
 #include "Widgets/SWindow.h"
 
 #if PLATFORM_WINDOWS
@@ -360,23 +361,6 @@ FVector2D UBlueWindowBPLibrary::ProjectEditorWorldSpacePointToScreenSpace(FVecto
     return FVector2D::ZeroVector;
 }
 
-void UBlueWindowBPLibrary::AddWidgetOverlayToEditorViewport(UWidget* Widget)
-{
-#if WITH_EDITOR
-    if (!GEditor) return;
-
-    const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
-    if (!ViewportClient) return;
-
-    auto VpRootWidget = ViewportClient->GetEditorViewportWidget();
-    auto SlateViewport = StaticCastSharedPtr<SViewport>(GetChildWidgetOfType(VpRootWidget, TEXT("SViewport")));
-    if(!SlateViewport) return;
-    auto Overlay = StaticCastSharedRef<SOverlay>(SlateViewport->GetChildren()->GetChildAt(0));
-#endif
-    
-    return;
-}
-
 TSharedPtr<SWidget> UBlueWindowBPLibrary::GetChildWidgetOfType(TSharedPtr<SWidget> InWidget, FName InType)
 {
     if(InWidget->GetType() == InType) return InWidget;
@@ -391,4 +375,58 @@ TSharedPtr<SWidget> UBlueWindowBPLibrary::GetChildWidgetOfType(TSharedPtr<SWidge
         if(CurrChild.IsValid()) return CurrChild;
     }
     return {};
+}
+
+TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetEditorViewportOverlay()
+{
+#if WITH_EDITOR
+    if (!GEditor) return nullptr;
+
+    const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
+    if (!ViewportClient) return nullptr;
+
+    const auto VpRootWidget = ViewportClient->GetEditorViewportWidget();
+    const auto SlateViewport = StaticCastSharedPtr<SViewport>(GetChildWidgetOfType(VpRootWidget, TEXT("SViewport")));
+    if(!SlateViewport) return nullptr;
+    return StaticCastSharedRef<SOverlay>(SlateViewport->GetChildren()->GetChildAt(0));
+#endif
+    return nullptr;
+}
+
+USlateWidgetWrapper* UBlueWindowBPLibrary::AddWidgetOverlayToEditorViewport(UWidget* Widget)
+{
+#if WITH_EDITOR
+    const auto Overlay = GetEditorViewportOverlay();
+    if (!Overlay.IsValid()) return nullptr;
+
+    USlateWidgetWrapper* NewWidget = NewObject<USlateWidgetWrapper>();
+    NewWidget->Widget = Widget->TakeWidget();
+    
+    Overlay->AddSlot()
+        .HAlign(HAlign_Left)
+        .VAlign(VAlign_Top)
+        [
+            NewWidget->Widget.ToSharedRef()
+            /*SAssignNew(NewWidget->Widget, STextBlock)
+            . SimpleTextMode(true)
+            . ColorAndOpacity(FLinearColor::Yellow)
+            . ShadowOffset(FVector2D(2, 2))
+            . ShadowColorAndOpacity(FLinearColor::Black)*/
+        ];
+    //StaticCastSharedPtr<STextBlock>(NewWidget->Widget)->SetText(FText::FromString("Hello World"));
+    return NewWidget;
+#endif
+    
+    return nullptr;
+}
+
+void UBlueWindowBPLibrary::RemoveWidgetOverlayFromEditorViewport(USlateWidgetWrapper* Widget)
+{
+    if (!Widget) return;
+#if WITH_EDITOR
+    const auto Overlay = GetEditorViewportOverlay();
+    if (!Overlay.IsValid()) return;
+    
+    Overlay->RemoveSlot(Widget->Widget.ToSharedRef());
+#endif
 }

@@ -22,6 +22,22 @@ enum EWindowOrder
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FTraceResultFilterDelegate, FHitResult, Hit);
 DECLARE_DELEGATE_RetVal_OneParam(bool, FTraceResultFilterStaticDel, FHitResult);
 
+UCLASS(BlueprintType)
+class USlateWidgetWrapper : public UObject
+{
+public:
+	GENERATED_BODY()
+	
+	TSharedPtr<SWidget> Widget;
+
+	UFUNCTION(BlueprintCallable)
+	void SetRenderTransform(FWidgetTransform Transform)
+	{
+		const FSlateRenderTransform SlateTransform(FScale2D(Transform.Scale), Transform.Translation);
+		Widget->SetRenderTransform(SlateTransform);
+	}
+};
+
 /* 
 *	Function library class.
 *	Each function in it is expected to be static and represents blueprint node that can be called in any blueprint.
@@ -174,8 +190,14 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 	UFUNCTION(BlueprintPure, Category = "Window|Editor")
 	static FVector2D ProjectEditorWorldSpacePointToScreenSpace(FVector Point);
 
-	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
-	static void AddWidgetOverlayToEditorViewport(UWidget* Widget);
-	
 	static TSharedPtr<SWidget> GetChildWidgetOfType(TSharedPtr<SWidget> InWidget, FName InType);
+	static TSharedPtr<SOverlay> GetEditorViewportOverlay();
+	
+	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
+	static USlateWidgetWrapper* AddWidgetOverlayToEditorViewport(UWidget* Widget);
+
+	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
+	static void RemoveWidgetOverlayFromEditorViewport(USlateWidgetWrapper* Widget);
+	
+	
 };
