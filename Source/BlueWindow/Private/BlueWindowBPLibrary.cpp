@@ -418,39 +418,27 @@ TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetEditorViewportOverlay()
     return nullptr;
 }
 
-USlateWidgetWrapper* UBlueWindowBPLibrary::AddWidgetOverlayToEditorViewport(UWidget* Widget)
+void UBlueWindowBPLibrary::AddWidgetOverlayToEditorViewport(UWidget* Widget)
 {
 #if WITH_EDITOR
     const auto Overlay = GetEditorViewportOverlay();
-    if (!Overlay.IsValid()) return nullptr;
-
-    USlateWidgetWrapper* NewWidget = NewObject<USlateWidgetWrapper>();
-    NewWidget->Widget = Widget->TakeWidget();
+    if (!Overlay.IsValid()) return;
     
     Overlay->AddSlot()
         .HAlign(HAlign_Left)
         .VAlign(VAlign_Top)
         [
-            NewWidget->Widget.ToSharedRef()
-            /*SAssignNew(NewWidget->Widget, STextBlock)
-            . SimpleTextMode(true)
-            . ColorAndOpacity(FLinearColor::Yellow)
-            . ShadowOffset(FVector2D(2, 2))
-            . ShadowColorAndOpacity(FLinearColor::Black)*/
+            Widget->TakeWidget()
         ];
-    //StaticCastSharedPtr<STextBlock>(NewWidget->Widget)->SetText(FText::FromString("Hello World"));
-    return NewWidget;
 #endif
-    
-    return nullptr;
 }
 
-void UBlueWindowBPLibrary::RemoveWidgetOverlayFromEditorViewport(USlateWidgetWrapper* Widget)
+void UBlueWindowBPLibrary::RemoveWidgetOverlayFromEditorViewport(UWidget* Widget)
 {
     if (!Widget) return;
 #if WITH_EDITOR
     const auto Overlay = GetEditorViewportOverlay();
     if (!Overlay.IsValid()) return;
-    Overlay->RemoveSlot(Widget->Widget.ToSharedRef());
+    Overlay->RemoveSlot(Widget->GetCachedWidget().ToSharedRef());
 #endif
 }
