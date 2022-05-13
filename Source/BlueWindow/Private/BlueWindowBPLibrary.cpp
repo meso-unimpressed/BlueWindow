@@ -405,8 +405,8 @@ TSharedPtr<SWidget> UBlueWindowBPLibrary::GetChildWidgetOfType(TSharedPtr<SWidge
 TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetEditorViewportOverlay()
 {
 #if WITH_EDITOR
-    if (!GEditor) return nullptr;
-    
+    if (!GEditor || !GEditor->GetActiveViewport()) return nullptr;
+
     const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
     if (!ViewportClient) return nullptr;
 
