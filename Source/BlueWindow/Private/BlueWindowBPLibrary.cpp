@@ -381,11 +381,6 @@ FVector2D UBlueWindowBPLibrary::ProjectEditorWorldSpacePointToScreenSpace(FVecto
         SceneView->ProjectWorldToScreen(Point, ViewRect, SceneView->ViewMatrices.GetViewProjectionMatrix(), ScreenPosition);
         ScreenPosition /= DpiScale;
     }
-    else
-    {
-        const auto PlayerController = UGameplayStatics::GetPlayerController(GEditor->GetWorld(), 0);
-        PlayerController->ProjectWorldLocationToScreen(Point, ScreenPosition);
-    }
     return ScreenPosition;
 #endif
     return FVector2D::ZeroVector;
@@ -411,7 +406,7 @@ TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetEditorViewportOverlay()
 {
 #if WITH_EDITOR
     if (!GEditor) return nullptr;
-
+    
     const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
     if (!ViewportClient) return nullptr;
 
