@@ -4,9 +4,9 @@
 
 #if WITH_EDITOR
 #include "Editor.h"
-#endif
 #include "LevelEditorViewport.h"
 #include "SEditorViewport.h"
+#endif
 #include "Kismet/GameplayStatics.h"
 #include "Rendering/DrawElements.h"
 #include "Math/TransformCalculus2D.h"
