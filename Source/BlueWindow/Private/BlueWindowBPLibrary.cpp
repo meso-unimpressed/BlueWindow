@@ -6,7 +6,10 @@
 #include "Editor.h"
 #include "LevelEditorViewport.h"
 #include "SEditorViewport.h"
+#include "MESOUSLCPPBPEditorLibrary.h"
 #endif
+#include "MESOUSLCPPBPLibrary.h"
+#include "Engine/GameEngine.h"
 #include "Kismet/GameplayStatics.h"
 #include "Rendering/DrawElements.h"
 #include "Math/TransformCalculus2D.h"
@@ -356,17 +359,14 @@ bool UBlueWindowBPLibrary::IsInEditorAndNotPlaying()
     return false;
 }
 
-FVector2D UBlueWindowBPLibrary::ProjectEditorWorldSpacePointToScreenSpace(FVector Point)
+FVector2D UBlueWindowBPLibrary::ProjectEditorWorldSpacePointToScreenSpace(FVector Point, int32 InGamePlayerId)
 {
+    FVector2D ScreenPosition = FVector2D::ZeroVector;
 #if WITH_EDITOR
     if (!GEditor) return FVector2D::ZeroVector;
 
-    FVector2D ScreenPosition{};
-    if (IsInEditorAndNotPlaying())
+    if (FLevelEditorViewportClient* ViewportClient = UMESOUSLCPPBPEditorLibrary::GetActiveLevelEditorViewportClient())
     {
-        const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
-        if (!ViewportClient) return FVector2D::ZeroVector;
-    
         FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(
             ViewportClient->Viewport,
             ViewportClient->GetScene(),
@@ -380,10 +380,14 @@ FVector2D UBlueWindowBPLibrary::ProjectEditorWorldSpacePointToScreenSpace(FVecto
 
         SceneView->ProjectWorldToScreen(Point, ViewRect, SceneView->ViewMatrices.GetViewProjectionMatrix(), ScreenPosition);
         ScreenPosition /= DpiScale;
+    }else
+#endif
+    if (UMESOUSLCPPBPLibrary::GetGameWorld())
+    {
+        const auto PlayerController = UGameplayStatics::GetPlayerController(UMESOUSLCPPBPLibrary::GetGameWorld(), InGamePlayerId);
+        PlayerController->ProjectWorldLocationToScreen(Point, ScreenPosition);
     }
     return ScreenPosition;
-#endif
-    return FVector2D::ZeroVector;
 }
 
 TSharedPtr<SWidget> UBlueWindowBPLibrary::GetChildWidgetOfType(TSharedPtr<SWidget> InWidget, FName InType)
@@ -411,17 +415,14 @@ TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetEditorViewportOverlay()
     if (!ViewportClient) return nullptr;
 
     const auto VpRootWidget = ViewportClient->GetEditorViewportWidget();
-    const auto SlateViewport = StaticCastSharedPtr<SViewport>(GetChildWidgetOfType(VpRootWidget, TEXT("SViewport")));
-    if(!SlateViewport) return nullptr;
-    return StaticCastSharedRef<SOverlay>(SlateViewport->GetChildren()->GetChildAt(0));
+    // Gets the next overlay widget in the hierarchy
+    return StaticCastSharedPtr<SOverlay>(VpRootWidget->GetParentWidget()->GetParentWidget());
 #endif
     return nullptr;
 }
 
-void UBlueWindowBPLibrary::AddWidgetOverlayToEditorViewport(UWidget* Widget)
+void UBlueWindowBPLibrary::AddWidgetToOverlay(TSharedPtr<SOverlay> Overlay, UWidget* Widget)
 {
-#if WITH_EDITOR
-    const auto Overlay = GetEditorViewportOverlay();
     if (!Overlay.IsValid()) return;
     
     Overlay->AddSlot()
@@ -430,15 +431,56 @@ void UBlueWindowBPLibrary::AddWidgetOverlayToEditorViewport(UWidget* Widget)
         [
             Widget->TakeWidget()
         ];
+}
+
+void UBlueWindowBPLibrary::RemoveWidgetFromParentOverlay(UWidget* Widget)
+{
+    TSharedPtr<SOverlay> Overlay;
+    
+    if(Widget->GetCachedWidget())
+        Overlay = StaticCastSharedPtr<SOverlay>(Widget->GetCachedWidget()->GetParentWidget());
+    else
+        Overlay = StaticCastSharedPtr<SOverlay>(Widget->TakeWidget()->GetParentWidget());
+    
+    if (!Overlay.IsValid()) return;
+    Overlay->RemoveSlot(Widget->GetCachedWidget().ToSharedRef());
+}
+
+void UBlueWindowBPLibrary::AddWidgetToLevelViewportOverlays(UWidget* Widget)
+{
+#if WITH_EDITOR
+    const auto Overlay = GetEditorViewportOverlay();
+    AddWidgetToOverlay(Overlay, Widget);
 #endif
 }
 
-void UBlueWindowBPLibrary::RemoveWidgetOverlayFromEditorViewport(UWidget* Widget)
+void UBlueWindowBPLibrary::RemoveWidgetFromLevelViewportOverlays(UWidget* Widget)
 {
     if (!Widget) return;
 #if WITH_EDITOR
     const auto Overlay = GetEditorViewportOverlay();
-    if (!Overlay.IsValid()) return;
-    Overlay->RemoveSlot(Widget->GetCachedWidget().ToSharedRef());
+    RemoveWidgetFromParentOverlay(Widget);
 #endif
+}
+
+TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetGameViewportOverlay()
+{
+    if (!GEngine || !GEngine->GetGameViewportWidget()) return nullptr;
+    
+    const auto VpRootWidget = GEngine->GetGameViewportWidget();
+    const auto SlateViewport = StaticCastSharedPtr<SViewport>(GetChildWidgetOfType(VpRootWidget, TEXT("SViewport")));
+    if(!SlateViewport) return nullptr;
+    return StaticCastSharedRef<SOverlay>(SlateViewport->GetChildren()->GetChildAt(0));
+}
+
+void UBlueWindowBPLibrary::AddWidgetOverlayToGameViewport(UWidget* Widget)
+{
+    const auto Overlay = GetGameViewportOverlay();
+    AddWidgetToOverlay(Overlay, Widget);
+}
+
+void UBlueWindowBPLibrary::RemoveWidgetOverlayFromGameViewport(UWidget* Widget)
+{
+    if (!Widget) return;
+    RemoveWidgetFromParentOverlay(Widget);
 }

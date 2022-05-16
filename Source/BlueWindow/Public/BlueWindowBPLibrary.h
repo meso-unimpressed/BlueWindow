@@ -174,16 +174,25 @@ class UBlueWindowBPLibrary : public UBlueprintFunctionLibrary
 	static bool IsInEditorAndNotPlaying();
 	
 	UFUNCTION(BlueprintPure, Category = "Window|Editor")
-	static FVector2D ProjectEditorWorldSpacePointToScreenSpace(FVector Point);
+	static FVector2D ProjectEditorWorldSpacePointToScreenSpace(FVector Point, int32 InGamePlayerId);
 
 	static TSharedPtr<SWidget> GetChildWidgetOfType(TSharedPtr<SWidget> InWidget, FName InType);
 	static TSharedPtr<SOverlay> GetEditorViewportOverlay();
+
+	static void AddWidgetToOverlay(TSharedPtr<SOverlay> Overlay, UWidget* Widget);
+	static void RemoveWidgetFromParentOverlay(UWidget* Widget);
 	
 	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
-	static void AddWidgetOverlayToEditorViewport(UWidget* Widget);
+	static void AddWidgetToLevelViewportOverlays(UWidget* Widget);
 
 	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
-	static void RemoveWidgetOverlayFromEditorViewport(UWidget* Widget);
+	static void RemoveWidgetFromLevelViewportOverlays(UWidget* Widget);
+
+	static TSharedPtr<SOverlay> GetGameViewportOverlay();
 	
-	
+	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
+	static void AddWidgetOverlayToGameViewport(UWidget* Widget);
+
+	UFUNCTION(BlueprintCallable, Category = "Window|Editor")
+	static void RemoveWidgetOverlayFromGameViewport(UWidget* Widget);
 };

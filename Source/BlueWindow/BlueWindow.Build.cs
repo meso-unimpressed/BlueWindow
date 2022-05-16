@@ -43,7 +43,7 @@ public class BlueWindow : ModuleRules
                 "SlateCore",
                 "RenderCore",
                 "RHI",
-                "MovieScene"
+                "MovieScene",
             }
 		);
 			
@@ -56,11 +56,19 @@ public class BlueWindow : ModuleRules
                 "RenderCore",
                 "D3D12RHI",
                 "UMG",
+                
+                "MESOUSLCPP",
             }
 		);
 
         if(Target.Type == TargetType.Editor)
-            PrivateDependencyModuleNames.Add("UnrealEd");
+            PrivateDependencyModuleNames.AddRange(
+	            new []
+	            {
+		            "UnrealEd",
+					"MESOUSLCPPEditor"
+	            }
+	        );
 
         if (Target.Type != TargetType.Server)
         {

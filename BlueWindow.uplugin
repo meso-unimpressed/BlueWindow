@@ -19,5 +19,11 @@
 			"Type": "Runtime",
 			"LoadingPhase": "PreLoadingScreen"
 		}
-	]
+		],
+	"Plugins": [
+		{
+			"Name": "MESOUSLCPP",
+			"Enabled": true
+		}
+		]
 }
