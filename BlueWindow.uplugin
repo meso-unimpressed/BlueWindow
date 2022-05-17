@@ -18,6 +18,11 @@
 			"Name": "BlueWindow",
 			"Type": "Runtime",
 			"LoadingPhase": "PreLoadingScreen"
+		},
+		{
+			"Name": "BlueWindowEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PreLoadingScreen"
 		}
 		],
 	"Plugins": [

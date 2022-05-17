@@ -406,19 +406,11 @@ TSharedPtr<SWidget> UBlueWindowBPLibrary::GetChildWidgetOfType(TSharedPtr<SWidge
     return {};
 }
 
-TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetEditorViewportOverlay()
+TSharedPtr<SWidget> UBlueWindowBPLibrary::GetParentWidgetOfType(const TSharedPtr<SWidget> InWidget, const FName InType)
 {
-#if WITH_EDITOR
-    if (!GEditor || !GEditor->GetActiveViewport()) return nullptr;
-
-    const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
-    if (!ViewportClient) return nullptr;
-
-    const auto VpRootWidget = ViewportClient->GetEditorViewportWidget();
-    // Gets the next overlay widget in the hierarchy
-    return StaticCastSharedPtr<SOverlay>(VpRootWidget->GetParentWidget()->GetParentWidget());
-#endif
-    return nullptr;
+    if (!InWidget.IsValid()) return {};
+    if(InWidget->GetType() == InType) return InWidget;
+    return GetParentWidgetOfType(InWidget->GetParentWidget(), InType);
 }
 
 void UBlueWindowBPLibrary::AddWidgetToOverlay(TSharedPtr<SOverlay> Overlay, UWidget* Widget)
@@ -444,23 +436,6 @@ void UBlueWindowBPLibrary::RemoveWidgetFromParentOverlay(UWidget* Widget)
     
     if (!Overlay.IsValid()) return;
     Overlay->RemoveSlot(Widget->GetCachedWidget().ToSharedRef());
-}
-
-void UBlueWindowBPLibrary::AddWidgetToLevelViewportOverlays(UWidget* Widget)
-{
-#if WITH_EDITOR
-    const auto Overlay = GetEditorViewportOverlay();
-    AddWidgetToOverlay(Overlay, Widget);
-#endif
-}
-
-void UBlueWindowBPLibrary::RemoveWidgetFromLevelViewportOverlays(UWidget* Widget)
-{
-    if (!Widget) return;
-#if WITH_EDITOR
-    const auto Overlay = GetEditorViewportOverlay();
-    RemoveWidgetFromParentOverlay(Widget);
-#endif
 }
 
 TSharedPtr<SOverlay> UBlueWindowBPLibrary::GetGameViewportOverlay()
