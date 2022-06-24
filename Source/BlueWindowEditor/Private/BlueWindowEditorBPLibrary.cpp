@@ -10,7 +10,18 @@ TSharedPtr<SOverlay> UBlueWindowEditorBPLibrary::GetEditorViewportOverlay()
 {
 	if (!GEditor || !GEditor->GetActiveViewport()) return nullptr;
 
-	const auto ViewportClient = static_cast<FLevelEditorViewportClient*>(GEditor->GetActiveViewport()->GetClient());
+
+	const FLevelEditorViewportClient* ViewportClient = nullptr;
+	{
+		auto AllViewportClients =  GEditor->GetLevelViewportClients();
+		for (const auto VC : AllViewportClients)
+		{
+			if (VC == GEditor->GetActiveViewport()->GetClient())
+			{
+				ViewportClient = VC;
+			}
+		}
+	}
 	if (!ViewportClient) return nullptr;
 
 	const auto VpRootWidget = ViewportClient->GetEditorViewportWidget();
@@ -28,10 +39,7 @@ void UBlueWindowEditorBPLibrary::AddWidgetToLevelViewportOverlays(UWidget* Widge
 void UBlueWindowEditorBPLibrary::RemoveWidgetFromLevelViewportOverlays(UWidget* Widget)
 {
 	if (!Widget) return;
-
-	const auto Overlay = GetEditorViewportOverlay();
-	if (Overlay.IsValid())
-		UBlueWindowBPLibrary::RemoveWidgetFromParentOverlay(Widget);
+	UBlueWindowBPLibrary::RemoveWidgetFromParentOverlay(Widget);
 }
 
 bool UBlueWindowEditorBPLibrary::GetActiveEditorViewportChanged()
