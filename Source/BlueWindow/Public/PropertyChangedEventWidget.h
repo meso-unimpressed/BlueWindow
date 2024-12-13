@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
 
 #include "PropertyChangedEventWidget.generated.h"
